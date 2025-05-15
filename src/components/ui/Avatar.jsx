@@ -13,12 +13,12 @@ function Avatar({ src, alt, initials, size = "md", className = "" }) {
       >
         {hasImage ? (
           <img
-            src={src || "/placeholder.svg"}
+            src={src || "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp"}
             alt={alt || "Avatar"}
             className="h-full w-full rounded-full object-cover"
             onError={(e) => {
               e.target.onerror = null
-              e.target.src = "https://via.placeholder.com/40"
+              e.target.src = "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp"
             }}
           />
         ) : (

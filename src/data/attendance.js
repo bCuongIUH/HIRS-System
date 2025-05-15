@@ -9,7 +9,7 @@ export const attendanceData = [
       totalHours: 8.5,
       overtime: 0,
       status: "Đúng giờ",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
     },
     {
       employeeId: "NV002",
@@ -21,7 +21,7 @@ export const attendanceData = [
       totalHours: 8.25,
       overtime: 0,
       status: "Đi muộn",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
     },
     {
       employeeId: "NV003",
@@ -33,7 +33,7 @@ export const attendanceData = [
       totalHours: 9.5,
       overtime: 1,
       status: "Đúng giờ",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
     },
     {
       employeeId: "NV004",
@@ -45,7 +45,7 @@ export const attendanceData = [
       totalHours: 7.92,
       overtime: 0,
       status: "Đúng giờ",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
     },
     {
       employeeId: "NV005",
@@ -57,7 +57,7 @@ export const attendanceData = [
       totalHours: 8,
       overtime: 0,
       status: "Đi muộn",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
     },
     {
       employeeId: "NV001",
@@ -69,7 +69,7 @@ export const attendanceData = [
       totalHours: 10,
       overtime: 1.5,
       status: "Đúng giờ",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
     },
     {
       employeeId: "NV002",
@@ -81,7 +81,7 @@ export const attendanceData = [
       totalHours: 8.5,
       overtime: 0,
       status: "Đúng giờ",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
     },
     {
       employeeId: "NV003",
@@ -93,7 +93,7 @@ export const attendanceData = [
       totalHours: 0,
       overtime: 0,
       status: "Vắng mặt",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
     },
   ]
   

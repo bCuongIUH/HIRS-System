@@ -7,7 +7,7 @@ export const employeesData = [
       position: "Kỹ sư phần mềm",
       joinDate: "01/01/2020",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 15000000,
     },
     {
@@ -18,7 +18,7 @@ export const employeesData = [
       position: "Trưởng phòng Marketing",
       joinDate: "15/03/2019",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 20000000,
     },
     {
@@ -29,7 +29,7 @@ export const employeesData = [
       position: "Nhân viên kinh doanh",
       joinDate: "10/05/2021",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 12000000,
     },
     {
@@ -40,7 +40,7 @@ export const employeesData = [
       position: "Chuyên viên nhân sự",
       joinDate: "22/07/2020",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 14000000,
     },
     {
@@ -51,7 +51,7 @@ export const employeesData = [
       position: "Kế toán trưởng",
       joinDate: "05/02/2018",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 18000000,
     },
     {
@@ -62,7 +62,7 @@ export const employeesData = [
       position: "Kỹ sư QA",
       joinDate: "18/09/2021",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 13000000,
     },
     {
@@ -73,7 +73,7 @@ export const employeesData = [
       position: "Quản đốc",
       joinDate: "30/11/2019",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 16000000,
     },
     {
@@ -84,7 +84,7 @@ export const employeesData = [
       position: "Trưởng phòng Kinh doanh",
       joinDate: "12/04/2018",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 22000000,
     },
     {
@@ -95,7 +95,7 @@ export const employeesData = [
       position: "Kỹ sư phần cứng",
       joinDate: "25/06/2020",
       status: "Nghỉ việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 14500000,
     },
     {
@@ -106,7 +106,7 @@ export const employeesData = [
       position: "Chuyên viên Marketing",
       joinDate: "08/08/2021",
       status: "Đang làm việc",
-      avatar: "/placeholder.svg",
+      avatar: "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp",
       baseSalary: 13500000,
     },
   ]

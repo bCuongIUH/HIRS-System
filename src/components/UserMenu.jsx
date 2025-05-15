@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { LogOut, Settings, User } from "lucide-react"
 
-function UserMenu() {
+function UserMenu({ onLogout }) {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
 
@@ -27,12 +27,12 @@ function UserMenu() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <img
-          src="/placeholder.svg"
+          src="https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp"
           alt="Avatar"
           className="h-8 w-8 rounded-full"
           onError={(e) => {
             e.target.onerror = null
-            e.target.src = "https://via.placeholder.com/40"
+            e.target.src = "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp"
           }}
         />
       </button>
@@ -54,7 +54,10 @@ function UserMenu() {
               <span>Cài đặt</span>
             </button>
             <div className="h-px bg-gray-200 my-1"></div>
-            <button className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100">
+            <button
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+              onClick={onLogout}
+            >
               <LogOut className="h-4 w-4" />
               <span>Đăng xuất</span>
             </button>
