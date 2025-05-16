@@ -2,10 +2,17 @@
 
 import { useState, useRef, useEffect } from "react"
 import { LogOut, Settings, User } from "lucide-react"
+import { logoutUser } from "../utils/auth"
+import { useNavigate } from "react-router-dom"
 
-function UserMenu({ onLogout }) {
+function UserMenu() {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef(null)
+  const navigate = useNavigate()
+
+  // Lấy thông tin người dùng từ localStorage
+  const userName = localStorage.getItem("userName") || "Admin"
+  const userEmail = localStorage.getItem("userEmail") || "admin@company.com"
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -20,29 +27,29 @@ function UserMenu({ onLogout }) {
     }
   }, [])
 
+  // Xử lý đăng xuất
+  const handleLogout = async () => {
+    await logoutUser()
+    navigate("/login")
+  }
+
   return (
     <div className="relative" ref={menuRef}>
       <button
         className="flex h-10 w-10 items-center justify-center rounded-full border"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <img
-          src="https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp"
-          alt="Avatar"
-          className="h-8 w-8 rounded-full"
-          onError={(e) => {
-            e.target.onerror = null
-            e.target.src = "https://cdn.mobilecity.vn/mobilecity-vn/images/2024/12/hinh-anh-con-lon-sieu-de-thuong-29.png.webp"
-          }}
-        />
+        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-medium">
+          {userName.charAt(0)}
+        </div>
       </button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-56 rounded-md border bg-white shadow-lg">
           <div className="p-2">
             <div className="px-3 py-2">
-              <p className="text-sm font-medium">Nguyễn Văn Admin</p>
-              <p className="text-xs text-gray-500">admin@company.com</p>
+              <p className="text-sm font-medium">{userName}</p>
+              <p className="text-xs text-gray-500">{userEmail}</p>
             </div>
             <div className="h-px bg-gray-200 my-1"></div>
             <button className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100">
@@ -56,7 +63,7 @@ function UserMenu({ onLogout }) {
             <div className="h-px bg-gray-200 my-1"></div>
             <button
               className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100"
-              onClick={onLogout}
+              onClick={handleLogout}
             >
               <LogOut className="h-4 w-4" />
               <span>Đăng xuất</span>

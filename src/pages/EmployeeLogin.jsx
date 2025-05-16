@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useNavigate, useLocation, Link } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { Building, Lock, Mail, AlertCircle } from "lucide-react"
-import { loginUser } from "../utils/auth"
+import { login } from "../utils/authApi"
 
-function Login() {
+function EmployeeLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -13,16 +13,20 @@ function Login() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Lấy đường dẫn chuyển hướng sau khi đăng nhập (nếu có)
-  const from = location.state?.from?.pathname || "/dashboard"
+  // Lấy đường dẫn chuyển hướng từ state (nếu có)
+  const from = location.state?.from?.pathname || "/employee/dashboard"
 
   // Kiểm tra nếu đã đăng nhập thì chuyển hướng
   useEffect(() => {
-    const token = localStorage.getItem("token")
+    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true"
     const userRole = localStorage.getItem("userRole")
 
-    if (token && userRole === "admin") {
-      navigate("/dashboard")
+    if (isAuthenticated) {
+      if (userRole === "admin" || userRole === "hr") {
+        navigate("/dashboard")
+      } else {
+        navigate("/employee/dashboard")
+      }
     }
   }, [navigate])
 
@@ -40,32 +44,34 @@ function Login() {
 
     try {
       // Gọi API đăng nhập
-      const response = await loginUser(email, password)
+      const response = await login(email, password)
 
-      console.log("Login response:", response) // Debug: Kiểm tra response
+      if (response.success && response.token) {
+        // Lưu thông tin đăng nhập
+        localStorage.setItem("token", response.token)
+        localStorage.setItem("isAuthenticated", "true")
+        localStorage.setItem("userRole", response.user.role)
+        localStorage.setItem("userName", response.user.name)
+        localStorage.setItem("userEmail", response.user.email)
+        localStorage.setItem("userId", response.user.id)
 
-      // Kiểm tra response và user object
-      if (!response || !response.user) {
-        throw new Error("Không nhận được thông tin người dùng từ server")
+        // Lưu thông tin nhân viên nếu có
+        if (response.user.employee) {
+          localStorage.setItem("employeeId", response.user.employee.id)
+          localStorage.setItem("employeeName", response.user.employee.fullName)
+          localStorage.setItem("employeePosition", response.user.employee.position)
+          localStorage.setItem("employeeDepartment", response.user.employee.department)
+        }
+
+        // Chuyển hướng dựa trên role
+        if (response.user.role === "admin" || response.user.role === "hr") {
+          navigate("/dashboard", { replace: true })
+        } else {
+          navigate("/employee/dashboard", { replace: true })
+        }
+      } else {
+        throw new Error("Đăng nhập thất bại")
       }
-
-      // Kiểm tra role, chỉ cho phép admin truy cập
-      if (!response.user.role || response.user.role !== "admin") {
-        setError("Bạn không có quyền truy cập vào hệ thống này")
-        setIsLoading(false)
-        return
-      }
-
-      // Lưu thông tin đăng nhập
-      localStorage.setItem("token", response.token)
-      localStorage.setItem("userRole", response.user.role)
-      localStorage.setItem("userName", response.user.name || "Admin")
-      localStorage.setItem("userEmail", response.user.email || "")
-      localStorage.setItem("userId", response.user.id || "")
-      localStorage.setItem("isAuthenticated", "true")
-
-      // Chuyển hướng đến trang dashboard
-      navigate("/dashboard", { replace: true })
     } catch (err) {
       console.error("Login error:", err)
       setError(err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.")
@@ -85,9 +91,9 @@ function Login() {
           </div>
         </div>
         <div className="p-12 text-white">
-          <h1 className="text-4xl font-bold mb-6">Hệ thống Quản lý Nhân sự và Tính lương</h1>
+          <h1 className="text-4xl font-bold mb-6">Hệ thống Chấm công và Quản lý Nhân sự</h1>
           <p className="text-lg opacity-80">
-            Giải pháp toàn diện giúp doanh nghiệp quản lý nhân sự, chấm công và tính lương hiệu quả.
+            Chào mừng bạn đến với hệ thống chấm công. Vui lòng đăng nhập để bắt đầu ngày làm việc của bạn.
           </p>
         </div>
         <div className="p-12 text-blue-100 text-sm">© 2023 HRIS System. Bản quyền thuộc về Công ty TNHH ABC.</div>
@@ -101,8 +107,8 @@ function Login() {
               <Building className="h-8 w-8 mr-2 text-blue-600" />
               <span className="text-2xl font-bold">HRIS System</span>
             </div>
-            <h1 className="text-3xl font-bold">Đăng nhập</h1>
-            <p className="text-gray-500 mt-2">Nhập thông tin đăng nhập để truy cập hệ thống</p>
+            <h1 className="text-3xl font-bold">Đăng nhập Nhân viên</h1>
+            <p className="text-gray-500 mt-2">Nhập thông tin đăng nhập để chấm công</p>
           </div>
 
           {error && (
@@ -129,7 +135,7 @@ function Login() {
                     autoComplete="email"
                     required
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="admin@company.com"
+                    placeholder="employee@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -158,7 +164,7 @@ function Login() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <input
                     id="remember-me"
@@ -166,14 +172,15 @@ function Login() {
                     type="checkbox"
                     className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
                     Ghi nhớ đăng nhập
                   </label>
                 </div>
+
                 <div className="text-sm">
-                  <Link to="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
+                  <a href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
                     Quên mật khẩu?
-                  </Link>
+                  </a>
                 </div>
               </div>
 
@@ -191,9 +198,9 @@ function Login() {
 
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600">
-              Chưa có tài khoản?{" "}
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
-                Liên hệ quản trị viên
+              Bạn là quản trị viên?{" "}
+              <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+                Đăng nhập với tư cách Admin
               </a>
             </p>
           </div>
@@ -203,4 +210,4 @@ function Login() {
   )
 }
 
-export default Login
+export default EmployeeLogin
