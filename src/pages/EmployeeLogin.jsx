@@ -1,80 +1,49 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
-import { Building, Lock, Mail, AlertCircle } from "lucide-react"
+import { Building, Mail, Lock, Eye, EyeOff, AlertCircle } from "lucide-react"
 import { login } from "../utils/authApi"
+import { setAuthToken } from "../utils/auth"
 
 function EmployeeLogin() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Lấy đường dẫn chuyển hướng từ state (nếu có)
+  // Lấy đường dẫn chuyển hướng sau khi đăng nhập thành công
   const from = location.state?.from?.pathname || "/employee/dashboard"
-
-  // Kiểm tra nếu đã đăng nhập thì chuyển hướng
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true"
-    const userRole = localStorage.getItem("userRole")
-
-    if (isAuthenticated) {
-      if (userRole === "admin" || userRole === "hr") {
-        navigate("/dashboard")
-      } else {
-        navigate("/employee/dashboard")
-      }
-    }
-  }, [navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError("")
     setIsLoading(true)
 
-    // Validate form
-    if (!email || !password) {
-      setError("Vui lòng nhập đầy đủ thông tin")
-      setIsLoading(false)
-      return
-    }
-
     try {
-      // Gọi API đăng nhập
       const response = await login(email, password)
 
-      if (response.success && response.token) {
-        // Lưu thông tin đăng nhập
+      if (response.success) {
+        // Lưu token vào localStorage
         localStorage.setItem("token", response.token)
         localStorage.setItem("isAuthenticated", "true")
         localStorage.setItem("userRole", response.user.role)
-        localStorage.setItem("userName", response.user.name)
-        localStorage.setItem("userEmail", response.user.email)
         localStorage.setItem("userId", response.user.id)
 
-        // Lưu thông tin nhân viên nếu có
-        if (response.user.employee) {
-          localStorage.setItem("employeeId", response.user.employee.id)
-          localStorage.setItem("employeeName", response.user.employee.fullName)
-          localStorage.setItem("employeePosition", response.user.employee.position)
-          localStorage.setItem("employeeDepartment", response.user.employee.department)
-        }
+        // Thiết lập token cho axios
+        setAuthToken(response.token)
 
-        // Chuyển hướng dựa trên role
-        if (response.user.role === "admin" || response.user.role === "hr") {
-          navigate("/dashboard", { replace: true })
-        } else {
-          navigate("/employee/dashboard", { replace: true })
-        }
+        // Chuyển hướng đến trang dashboard
+        navigate(from, { replace: true })
       } else {
         throw new Error("Đăng nhập thất bại")
       }
     } catch (err) {
       console.error("Login error:", err)
-      setError(err.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin đăng nhập.")
+      setError(err.message || "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập.")
     } finally {
       setIsLoading(false)
     }
@@ -91,12 +60,10 @@ function EmployeeLogin() {
           </div>
         </div>
         <div className="p-12 text-white">
-          <h1 className="text-4xl font-bold mb-6">Hệ thống Chấm công và Quản lý Nhân sự</h1>
-          <p className="text-lg opacity-80">
-            Chào mừng bạn đến với hệ thống chấm công. Vui lòng đăng nhập để bắt đầu ngày làm việc của bạn.
-          </p>
+          <h1 className="text-4xl font-bold mb-6">Đăng nhập nhân viên</h1>
+          <p className="text-lg opacity-80">Chào mừng bạn quay trở lại! Đăng nhập để truy cập vào hệ thống.</p>
         </div>
-        <div className="p-12 text-blue-100 text-sm">© 2023 HRIS System. Bản quyền thuộc về Công ty TNHH ABC.</div>
+        <div className="p-12 text-blue-100 text-sm">© 2025 HRIS System. Bản quyền thuộc về Công ty Cuong Dev.</div>
       </div>
 
       {/* Form đăng nhập bên phải */}
@@ -107,8 +74,8 @@ function EmployeeLogin() {
               <Building className="h-8 w-8 mr-2 text-blue-600" />
               <span className="text-2xl font-bold">HRIS System</span>
             </div>
-            <h1 className="text-3xl font-bold">Đăng nhập Nhân viên</h1>
-            <p className="text-gray-500 mt-2">Nhập thông tin đăng nhập để chấm công</p>
+            <h1 className="text-3xl font-bold">Đăng nhập nhân viên</h1>
+            <p className="text-gray-500 mt-2">Nhập thông tin đăng nhập của bạn để tiếp tục</p>
           </div>
 
           {error && (
@@ -135,7 +102,7 @@ function EmployeeLogin() {
                     autoComplete="email"
                     required
                     className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="employee@example.com"
+                    placeholder="your-email@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
@@ -153,14 +120,25 @@ function EmployeeLogin() {
                   <input
                     id="password"
                     name="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <Eye className="h-5 w-5 text-gray-400" />
+                    )}
+                  </button>
                 </div>
               </div>
 
@@ -190,7 +168,7 @@ function EmployeeLogin() {
                   disabled={isLoading}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isLoading ? "Đang xử lý..." : "Đăng nhập"}
+                  {isLoading ? "Đang đăng nhập..." : "Đăng nhập"}
                 </button>
               </div>
             </div>
@@ -200,7 +178,7 @@ function EmployeeLogin() {
             <p className="text-sm text-gray-600">
               Bạn là quản trị viên?{" "}
               <a href="/login" className="font-medium text-blue-600 hover:text-blue-500">
-                Đăng nhập với tư cách Admin
+                Đăng nhập quản trị
               </a>
             </p>
           </div>

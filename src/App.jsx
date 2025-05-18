@@ -91,7 +91,7 @@ function App() {
         {/* Route quên mật khẩu */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/reset-password/:resettoken" element={<ResetPassword />} />
 
         {/* Route mặc định chuyển hướng đến dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
