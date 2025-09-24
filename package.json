@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "antd": "^5.27.1",
     "axios": "^1.9.0",
     "chart.js": "^4.4.9",
     "framer-motion": "^11.0.8",
@@ -18,7 +19,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.6.0",
-    "react-toastify": "^11.0.5"
+    "react-toastify": "^11.0.5",
+    "recharts": "^3.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

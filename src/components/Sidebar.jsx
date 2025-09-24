@@ -1,7 +1,7 @@
 "use client"
 
 import { NavLink } from "react-router-dom"
-import { BarChart3, Users, CalendarClock, Receipt, Calculator, Settings, Building, LogOut } from "lucide-react"
+import { BarChart3, Users, CalendarClock, Receipt, Calculator, Settings, Building, LogOut, Book, Warehouse, ListOrdered, User2, BarChart2 } from "lucide-react"
 
 const sidebarLinks = [
   {
@@ -12,33 +12,38 @@ const sidebarLinks = [
   {
     title: "Nhân viên",
     href: "/employees",
+    icon: User2,
+  },
+   {
+    title: "Khách hàng",
+    href: "/customers",
     icon: Users,
   },
   {
-    title: "Chấm công",
-    href: "/attendance",
-    icon: CalendarClock,
+    title: "Sản phẩm",
+    href: "/addBookPage",
+    icon: Book,
   },
   {
-    title: "Bảng lương",
-    href: "/payroll",
-    icon: Receipt,
+    title: "Kho hàng",
+    href: "/inventory",
+    icon: Warehouse,
   },
   {
-    title: "Tính lương",
-    href: "/payroll/calculate",
-    icon: Calculator,
+    title: "Đơn hàng",
+    href: "/orders",
+    icon: ListOrdered,
   },
   {
-    title: "Phòng ban",
-    href: "/departments",
-    icon: Building,
+    title: "Thống Kê",
+    href: "/thong-ke",
+    icon: BarChart2,
   },
-  {
-    title: "Cài đặt",
-    href: "/settings",
-    icon: Settings,
-  },
+  // {
+  //   title: "Cài đặt",
+  //   href: "/settings",
+  //   icon: Settings,
+  // },
 ]
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
@@ -62,7 +67,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           <div className="border-b px-6 py-4">
             <NavLink to="/dashboard" className="flex items-center gap-2 font-semibold">
               <Building className="h-6 w-6 text-blue-600" />
-              <span className="text-xl">HRIS System</span>
+              <span className="text-xl">Book Store</span>
             </NavLink>
           </div>
           <div className="flex-1 overflow-auto py-2">

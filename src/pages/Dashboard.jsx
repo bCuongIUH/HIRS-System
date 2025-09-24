@@ -66,7 +66,7 @@ console.log(chartData);
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-gray-500">Tổng quan về hệ thống quản lý nhân sự và tính lương của công ty.</p>
+        <p className="text-gray-500">Tổng quan về hệ thống quản lý bán sách trực tuyến.</p>
       </div>
 
       {/* Stats */}
@@ -82,7 +82,7 @@ console.log(chartData);
 
         <Card className="flex flex-col">
           <div className="flex flex-row items-center justify-between pb-2">
-            <h3 className="text-sm font-medium">Tổng giờ làm</h3>
+            <h3 className="text-sm font-medium">Tổng sản phẩm</h3>
             <Clock className="h-4 w-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold">24,360</div>
@@ -91,7 +91,7 @@ console.log(chartData);
 
         <Card className="flex flex-col">
           <div className="flex flex-row items-center justify-between pb-2">
-            <h3 className="text-sm font-medium">Tổng lương</h3>
+            <h3 className="text-sm font-medium">Tổng doanh thu</h3>
             <Receipt className="h-4 w-4 text-gray-400" />
           </div>
           <div className="text-2xl font-bold">2.4 tỷ</div>

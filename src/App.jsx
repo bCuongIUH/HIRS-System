@@ -5,17 +5,24 @@ import { useEffect } from "react"
 import Layout from "./components/Layout"
 import Dashboard from "./pages/Dashboard"
 import Employees from "./pages/Employees"
-import Attendance from "./pages/Attendance"
-import Payroll from "./pages/Payroll"
+// import Payroll from "./pages/Payroll"
 import PayrollCalculate from "./pages/PayrollCalculate"
 import Departments from "./pages/Departments"
 import Settings from "./pages/Settings"
 import Login from "./pages/Login"
-import EmployeeLogin from "./pages/EmployeeLogin"
-import EmployeeDashboard from "./pages/EmployeeDashboard"
+// import EmployeeLogin from "./pages/EmployeeLogin"
+// import EmployeeDashboard from "./pages/EmployeeDashboard"
 import ForgotPassword from "./pages/ForgotPassword"
 import ResetPassword from "./pages/ResetPassword"
 import { setAuthToken } from "./utils/auth"
+import AddBookPage from "./pages/AddBookPage"
+import WarehousePage from "./pages/WarehousePage"
+import CustomerPage from "./pages/CustomerPage"
+import Customers from "./pages/CustomerPage"
+import Inventory from "./pages/Inventory"
+import ImportGoods from "./pages/ImportGoods"
+import DetailOrders from "./pages/DetailOrders"
+import RevenueDashboard from "./pages/ThongKe"
 
 // Bảo vệ route yêu cầu xác thực cho Admin
 const RequireAuth = ({ children }) => {
@@ -85,7 +92,7 @@ function App() {
       <Routes>
         {/* Route đăng nhập */}
         <Route path="/login" element={<Login />} />
-        <Route path="/employee/login" element={<EmployeeLogin />} />
+    
         <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Route quên mật khẩu */}
@@ -96,15 +103,7 @@ function App() {
         {/* Route mặc định chuyển hướng đến dashboard */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-        {/* Route cho nhân viên */}
-        <Route
-          path="/employee/dashboard"
-          element={
-            <RequireEmployee>
-              <EmployeeDashboard />
-            </RequireEmployee>
-          }
-        />
+       
 
         {/* Các route được bảo vệ cho admin */}
         <Route
@@ -117,11 +116,15 @@ function App() {
         >
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="employees" element={<Employees />} />
-          <Route path="attendance" element={<Attendance />} />
-          <Route path="payroll" element={<Payroll />} />
-          <Route path="payroll/calculate" element={<PayrollCalculate />} />
+          <Route path="addBookPage" element={<AddBookPage />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="inventory" element={<Inventory />} />
+          <Route path="import-goods" element={<ImportGoods />} />
+          <Route path="orders" element={<DetailOrders />} />
           <Route path="departments" element={<Departments />} />
           <Route path="settings" element={<Settings />} />
+          
+          <Route path="thong-ke" element={<RevenueDashboard />} />
         </Route>
 
         {/* Route không tồn tại */}

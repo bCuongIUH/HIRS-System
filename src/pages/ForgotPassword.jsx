@@ -57,7 +57,7 @@ function ForgotPassword() {
           <h1 className="text-4xl font-bold mb-6">Quên mật khẩu?</h1>
           <p className="text-lg opacity-80">Đừng lo lắng! Chúng tôi sẽ gửi cho bạn hướng dẫn để đặt lại mật khẩu.</p>
         </div>
-        <div className="p-12 text-blue-100 text-sm">© 2023 HRIS System. Bản quyền thuộc về Công ty TNHH ABC.</div>
+        <div className="p-12 text-blue-100 text-sm">© 2025 HRIS System. Bản quyền thuộc về Công ty Cuong Dev.</div>
       </div>
 
       {/* Form quên mật khẩu bên phải */}

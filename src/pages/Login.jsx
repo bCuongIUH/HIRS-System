@@ -81,16 +81,16 @@ function Login() {
         <div className="p-12">
           <div className="flex items-center text-white">
             <Building className="h-8 w-8 mr-2" />
-            <span className="text-2xl font-bold">HRIS System</span>
+            <span className="text-2xl font-bold">KT.BookStore</span>
           </div>
         </div>
         <div className="p-12 text-white">
-          <h1 className="text-4xl font-bold mb-6">Hệ thống Quản lý Nhân sự và Tính lương</h1>
+          <h1 className="text-4xl font-bold mb-6">Hệ thống Quản lý Book</h1>
           <p className="text-lg opacity-80">
-            Giải pháp toàn diện giúp doanh nghiệp quản lý nhân sự, chấm công và tính lương hiệu quả.
+            Giải pháp toàn diện giúp doanh nghiệp, quản lý bán sách hiệu quả.
           </p>
         </div>
-        <div className="p-12 text-blue-100 text-sm">© 2023 HRIS System. Bản quyền thuộc về Công ty TNHH ABC.</div>
+        <div className="p-12 text-blue-100 text-sm">© 2025 KT.BookStore.</div>
       </div>
 
       {/* Form đăng nhập bên phải */}
@@ -99,7 +99,7 @@ function Login() {
           <div className="text-center mb-10">
             <div className="flex items-center justify-center lg:hidden mb-6">
               <Building className="h-8 w-8 mr-2 text-blue-600" />
-              <span className="text-2xl font-bold">HRIS System</span>
+              <span className="text-2xl font-bold">KT.BookStore</span>
             </div>
             <h1 className="text-3xl font-bold">Đăng nhập</h1>
             <p className="text-gray-500 mt-2">Nhập thông tin đăng nhập để truy cập hệ thống</p>

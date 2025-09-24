@@ -1,139 +1,3 @@
-// "use client"
-
-// import { useState } from "react"
-// import { PlusCircle, Search } from "lucide-react"
-// import Button from "../components/ui/Button"
-// import Input from "../components/ui/Input"
-// import Select from "../components/ui/Select"
-// import Table from "../components/ui/Table"
-// import Badge from "../components/ui/Badge"
-// import Avatar from "../components/ui/Avatar"
-// import Dropdown from "../components/ui/Dropdown"
-// import { employeesData } from "../data/employees"
-
-// function Employees() {
-//   const [searchTerm, setSearchTerm] = useState("")
-//   const [departmentFilter, setDepartmentFilter] = useState("all")
-
-//   // Filter employees based on search term and department
-//   const filteredEmployees = employeesData.filter((employee) => {
-//     const matchesSearch =
-//       employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       employee.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       employee.position.toLowerCase().includes(searchTerm.toLowerCase())
-
-//     const matchesDepartment = departmentFilter === "all" || employee.department === departmentFilter
-
-//     return matchesSearch && matchesDepartment
-//   })
-
-//   // Get unique departments for filter
-//   const departments = Array.from(new Set(employeesData.map((employee) => employee.department)))
-//   const departmentOptions = [
-//     { value: "all", label: "Tất cả phòng ban" },
-//     ...departments.map((dept) => ({ value: dept, label: dept })),
-//   ]
-
-//   // Table columns
-//   const columns = [
-//     {
-//       header: "Nhân viên",
-//       accessor: "name",
-//       cell: (row) => (
-//         <div className="flex items-center gap-3">
-//           <Avatar src={row.avatar} alt={row.name} initials={row.name.charAt(0)} size="sm" />
-//           <div className="flex flex-col">
-//             <span className="font-medium">{row.name}</span>
-//             <span className="text-xs text-gray-500">{row.email}</span>
-//           </div>
-//         </div>
-//       ),
-//     },
-//     {
-//       header: "ID",
-//       accessor: "id",
-//     },
-//     {
-//       header: "Phòng ban",
-//       accessor: "department",
-//     },
-//     {
-//       header: "Vị trí",
-//       accessor: "position",
-//     },
-//     {
-//       header: "Ngày vào làm",
-//       accessor: "joinDate",
-//     },
-//     {
-//       header: "Trạng thái",
-//       accessor: "status",
-//       cell: (row) => <Badge variant={row.status === "Đang làm việc" ? "success" : "default"}>{row.status}</Badge>,
-//     },
-//     {
-//       header: "Thao tác",
-//       accessor: "actions",
-//       className: "text-right",
-//       cell: (row) => (
-//         <div className="flex justify-end">
-//           <Dropdown
-//             items={[
-//               { type: "label", label: "Thao tác" },
-//               { type: "item", label: "Xem chi tiết", onClick: () => console.log("View", row.id) },
-//               { type: "item", label: "Chỉnh sửa", onClick: () => console.log("Edit", row.id) },
-//               { type: "divider" },
-//               { type: "item", label: "Tính lương", onClick: () => console.log("Calculate", row.id) },
-//               { type: "item", label: "Xem chấm công", onClick: () => console.log("Attendance", row.id) },
-//               { type: "divider" },
-//               {
-//                 type: "item",
-//                 label: "Xóa nhân viên",
-//                 className: "text-red-600",
-//                 onClick: () => console.log("Delete", row.id),
-//               },
-//             ]}
-//           />
-//         </div>
-//       ),
-//     },
-//   ]
-
-//   return (
-//     <div className="space-y-6">
-//       <div className="flex items-center justify-between">
-//         <div>
-//           <h1 className="text-3xl font-bold tracking-tight">Quản lý Nhân viên</h1>
-//           <p className="text-gray-500">Quản lý thông tin nhân viên trong hệ thống.</p>
-//         </div>
-//         <Button icon={<PlusCircle className="h-4 w-4" />}>Thêm nhân viên</Button>
-//       </div>
-
-//       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-//         <div className="relative w-full sm:w-64">
-//           <Input
-//             type="search"
-//             placeholder="Tìm nhân viên..."
-//             value={searchTerm}
-//             onChange={(e) => setSearchTerm(e.target.value)}
-//             icon={<Search className="h-4 w-4 text-gray-400" />}
-//           />
-//         </div>
-//         <Select
-//           options={departmentOptions}
-//           value={departmentFilter}
-//           onChange={setDepartmentFilter}
-//           className="w-full sm:w-[180px]"
-//         />
-//       </div>
-
-//       <Table columns={columns} data={filteredEmployees} emptyMessage="Không tìm thấy nhân viên nào." />
-//     </div>
-//   )
-// }
-
-// export default Employees
-
-
 "use client"
 
 import { useState, useEffect } from "react"
@@ -155,14 +19,14 @@ function Employees() {
     lastName: "",
     email: "",
     phone: "",
-    position: "",
-    department: "",
+    // position: "",
+    department: departments.find(dep => dep.name === "Nhân viên")?._id || "",
     gender: "male",
     dateOfBirth: "",
     joinDate: new Date().toISOString().split("T")[0],
-    salary: {
-      baseSalary: 0,
-    },
+    // salary: {
+    //   baseSalary: 0,
+    // },
   })
   const [formErrors, setFormErrors] = useState({})
 
@@ -242,11 +106,11 @@ function Employees() {
       errors.email = "Email không hợp lệ"
     }
     if (!newEmployee.phone) errors.phone = "Vui lòng nhập số điện thoại"
-    if (!newEmployee.position) errors.position = "Vui lòng nhập vị trí"
+   
     if (!newEmployee.department) errors.department = "Vui lòng chọn phòng ban"
     if (!newEmployee.dateOfBirth) errors.dateOfBirth = "Vui lòng nhập ngày sinh"
     if (!newEmployee.joinDate) errors.joinDate = "Vui lòng nhập ngày vào làm"
-    if (!newEmployee.salary.baseSalary) errors.baseSalary = "Vui lòng nhập lương cơ bản"
+
 
     setFormErrors(errors)
     return Object.keys(errors).length === 0
@@ -273,14 +137,14 @@ function Employees() {
         lastName: "",
         email: "",
         phone: "",
-        position: "",
+        // position: "",
         department: "",
         gender: "male",
         dateOfBirth: "",
         joinDate: new Date().toISOString().split("T")[0],
-        salary: {
-          baseSalary: 0,
-        },
+        // salary: {
+        //   baseSalary: 0,
+        // },
       })
       setShowAddModal(false)
       toast.success("Thêm nhân viên thành công!")
@@ -319,8 +183,8 @@ function Employees() {
     const fullName = `${employee.firstName} ${employee.lastName}`
     const matchesSearch =
       fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (employee.position && employee.position.toLowerCase().includes(searchTerm.toLowerCase()))
+      (employee.email && employee.email.toLowerCase().includes(searchTerm.toLowerCase())) 
+            // (employee.position && employee.position.toLowerCase().includes(searchTerm.toLowerCase()))
 
     const matchesDepartment =
       departmentFilter === "all" || (employee.department && employee.department._id === departmentFilter)
@@ -395,12 +259,6 @@ function Employees() {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
               >
-                Vị trí
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-              >
                 Ngày vào làm
               </th>
               <th
@@ -464,7 +322,7 @@ function Employees() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {employee.department?.name || "Chưa phân công"}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.position}</td>
+                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{employee.position}</td> */}
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(employee.joinDate).toLocaleDateString("vi-VN")}
                   </td>
@@ -623,43 +481,29 @@ function Employees() {
                       {formErrors.phone && <p className="mt-1 text-xs text-red-500">{formErrors.phone}</p>}
                     </div>
 
-                    <div>
-                      <label htmlFor="position" className="block text-sm font-medium text-gray-700">
-                        Vị trí <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="position"
-                        id="position"
-                        value={newEmployee.position}
-                        onChange={handleInputChange}
-                        className={`mt-1 block w-full rounded-md border ${
-                          formErrors.position ? "border-red-500" : "border-gray-300"
-                        } px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm`}
-                      />
-                      {formErrors.position && <p className="mt-1 text-xs text-red-500">{formErrors.position}</p>}
-                    </div>
+            
 
                     <div>
                       <label htmlFor="department" className="block text-sm font-medium text-gray-700">
                         Phòng ban <span className="text-red-500">*</span>
                       </label>
+                     
                       <select
                         name="department"
                         id="department"
-                        value={newEmployee.department}
+                        value={newEmployee.department || departments.find(dep => dep.name === "Nhân viên")?._id}
                         onChange={handleInputChange}
                         className={`mt-1 block w-full rounded-md border ${
                           formErrors.department ? "border-red-500" : "border-gray-300"
                         } px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm`}
                       >
-                        <option value="">Chọn phòng ban</option>
                         {departments.map((department) => (
                           <option key={department._id} value={department._id}>
                             {department.name}
                           </option>
                         ))}
                       </select>
+
                       {formErrors.department && <p className="mt-1 text-xs text-red-500">{formErrors.department}</p>}
                     </div>
 
@@ -713,24 +557,6 @@ function Employees() {
                       />
                       {formErrors.joinDate && <p className="mt-1 text-xs text-red-500">{formErrors.joinDate}</p>}
                     </div>
-
-                    <div className="sm:col-span-2">
-                      <label htmlFor="salary.baseSalary" className="block text-sm font-medium text-gray-700">
-                        Lương cơ bản (VNĐ) <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        name="salary.baseSalary"
-                        id="salary.baseSalary"
-                        value={newEmployee.salary.baseSalary}
-                        onChange={handleInputChange}
-                        className={`mt-1 block w-full rounded-md border ${
-                          formErrors.baseSalary ? "border-red-500" : "border-gray-300"
-                        } px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm`}
-                      />
-                      {formErrors.baseSalary && <p className="mt-1 text-xs text-red-500">{formErrors.baseSalary}</p>}
-                    </div>
-
                     <div className="sm:col-span-2">
                       <label className="block text-sm font-medium text-gray-700">Ảnh đại diện</label>
                       <div className="mt-1 flex items-center">
