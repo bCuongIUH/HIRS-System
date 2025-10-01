@@ -1,5 +1,12 @@
 import api from "./api"
-
+// 👉 Thêm interceptor để gắn token vào tất cả request
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("token")
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
+  }
+  return config
+})
 // Lấy danh sách nhân viên
 export const getEmployees = async (params = {}) => {
   try {

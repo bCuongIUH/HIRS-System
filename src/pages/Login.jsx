@@ -50,11 +50,12 @@ function Login() {
       }
 
       // Kiểm tra role, chỉ cho phép admin truy cập
-      if (!response.user.role || response.user.role !== "admin") {
-        setError("Bạn không có quyền truy cập vào hệ thống này")
-        setIsLoading(false)
-        return
-      }
+    if (!response.user.role || !["admin", "employee"].includes(response.user.role)) {
+    setError("Bạn không có quyền truy cập vào hệ thống này")
+    setIsLoading(false)
+      return
+  }
+
 
       // Lưu thông tin đăng nhập
       localStorage.setItem("token", response.token)
