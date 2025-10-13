@@ -21,7 +21,7 @@ const sidebarLinks = [
   },
   {
     title: "Sản phẩm",
-    href: "/addBookPage",
+    href: "/book-management",
     icon: Book,
   },
   {
