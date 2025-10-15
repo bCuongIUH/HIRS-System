@@ -25,6 +25,8 @@ import RevenueDashboard from "./pages/ThongKe"
 import BookManagementPage from "./pages/BookManagementPage"
 import ImportBooksPage from "./pages/khohang/ImportBookPage"
 import BookInventoryPage from "./pages/khohang/BookInventoryPage"
+import PromotionForm from "./pages/khuyenmai/PromotionForm"
+
 
 
 // Bảo vệ route yêu cầu xác thực cho Admin
@@ -133,6 +135,8 @@ function App() {
       
         <Route path="bookInventoryPage" element={<BookInventoryPage />} />
         <Route path="importBookPage" element={<ImportBooksPage />} />
+
+             <Route path="promotionForm" element={<PromotionForm />} />
         </Route>
 
         {/* Route không tồn tại */}

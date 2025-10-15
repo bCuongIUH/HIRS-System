@@ -34,6 +34,11 @@ const sidebarLinks = [
     href: "/orders",
     icon: ListOrdered,
   },
+    {
+    title: "Khuyến Mãi",
+    href: "/promotionForm",
+    icon: ListOrdered,
+  },
   {
     title: "Thống Kê",
     href: "/thong-ke",
