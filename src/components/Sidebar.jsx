@@ -1,7 +1,7 @@
 "use client"
 
 import { NavLink } from "react-router-dom"
-import { BarChart3, Users, CalendarClock, Receipt, Calculator, Settings, Building, LogOut, Book, Warehouse, ListOrdered, User2, BarChart2 } from "lucide-react"
+import { BarChart3, Users, CalendarClock, Receipt, Calculator, Settings, Building, LogOut, Book, Warehouse, ListOrdered, User2, BarChart2, ShoppingBag, TicketCheckIcon } from "lucide-react"
 
 const sidebarLinks = [
   {
@@ -29,15 +29,20 @@ const sidebarLinks = [
     href: "/bookInventoryPage",
     icon: Warehouse,
   },
+     {
+    title: "Kiểm kho",
+    href: "/kiemkho",
+    icon: Warehouse,
+  },
   {
     title: "Đơn hàng",
     href: "/orders",
-    icon: ListOrdered,
+    icon: ShoppingBag,
   },
     {
     title: "Khuyến Mãi",
     href: "/promotionForm",
-    icon: ListOrdered,
+    icon: TicketCheckIcon,
   },
   {
     title: "Thống Kê",
