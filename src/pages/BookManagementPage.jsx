@@ -13,22 +13,20 @@ const BookManagementPage = () => {
   // modal states
   const [isModalOpen, setIsModalOpen] = useState(false); // add modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false); // edit modal
-  const [editingBook, setEditingBook] = useState(null); // <-- fixed: declare editingBook
+  const [editingBook, setEditingBook] = useState(null);
 
   // pagination
   const [currentPage, setCurrentPage] = useState(1);
   const booksPerPage = 10;
 
-  // fetch books
+  // fetch all books
   const fetchBooks = async () => {
     try {
       setLoading(true);
       const res = await axios.get("http://localhost:5000/api/books");
       if (res.data && res.data.success) {
         setBooks(res.data.data);
-      } else if (res.data) {
-        // if your API returns plain array: setBooks(res.data)
-        // try both safely
+      } else {
         setBooks(res.data.data || res.data || []);
       }
     } catch (error) {
@@ -43,7 +41,7 @@ const BookManagementPage = () => {
     fetchBooks();
   }, []);
 
-  // filter
+  // filter by keyword
   const filteredBooks = books.filter((book) => {
     const keyword = search.toLowerCase();
     return (
@@ -55,7 +53,7 @@ const BookManagementPage = () => {
   });
 
   const totalBooks = books.length;
-  const totalQuantity = books.reduce((sum, b) => sum + (b.quantity || 0), 0);
+  const totalstock = books.reduce((sum, b) => sum + (b.stock || 0), 0);
 
   // pagination logic
   const totalPages = Math.max(1, Math.ceil(filteredBooks.length / booksPerPage));
@@ -65,7 +63,7 @@ const BookManagementPage = () => {
   const handlePrevPage = () => setCurrentPage((p) => Math.max(p - 1, 1));
   const handleNextPage = () => setCurrentPage((p) => Math.min(p + 1, totalPages));
 
-  // delete (fix: use DELETE)
+  // delete book
   const handleDelete = (bookId, title) => {
     Modal.confirm({
       title: "Xác nhận xóa sách",
@@ -76,7 +74,6 @@ const BookManagementPage = () => {
       centered: true,
       async onOk() {
         try {
-          
           const res = await axios.put(`http://localhost:5000/api/books/${bookId}`);
           if (res.data && res.data.success) {
             message.success("Đã xóa sách thành công!");
@@ -92,7 +89,7 @@ const BookManagementPage = () => {
     });
   };
 
-  // edit handler (fix: set editingBook)
+  // edit handler
   const handleEdit = (book) => {
     setEditingBook(book);
     setIsEditModalOpen(true);
@@ -107,21 +104,23 @@ const BookManagementPage = () => {
 
   return (
     <div className="p-8 bg-gray-50 min-h-screen">
-      {/* Header + search + summary */}
+      {/* Header */}
       <div className="sticky top-0 bg-gray-50 pb-4 z-10">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <span className="text-blue-600">📘</span> Quản Lý Sách
             </h1>
-            <p className="text-gray-500 text-sm mt-1">Quản lý thông tin sách trong hệ thống</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Quản lý thông tin sách trong hệ thống
+            </p>
           </div>
 
           <button
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
             onClick={() => {
               setIsModalOpen(true);
-              setEditingBook(null); // ensure editingBook cleared when adding
+              setEditingBook(null);
             }}
           >
             <Plus size={18} /> Thêm Sách Mới
@@ -150,14 +149,14 @@ const BookManagementPage = () => {
           </div>
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <p className="text-gray-500 text-sm">Tổng số lượng</p>
-            <p className="text-2xl font-bold">{totalQuantity}</p>
+            <p className="text-2xl font-bold">{totalstock}</p>
           </div>
         </div>
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-lg shadow-sm border overflow-x-auto max-h-[70vh] overflow-y-auto">
-        <table className="w-full border-collapse min-w-[950px]">
+        <table className="w-full border-collapse min-w-[1100px]">
           <thead className="sticky top-0 bg-gray-100 z-10">
             <tr className="text-gray-700">
               <th className="p-3 text-left w-16">#</th>
@@ -166,6 +165,7 @@ const BookManagementPage = () => {
               <th className="p-3 text-left">Tác Giả</th>
               <th className="p-3 text-left">Thể Loại</th>
               <th className="p-3 text-left">Năm SX</th>
+              <th className="p-3 text-left">Tập Sách</th> 
               <th className="p-3 text-left">Số Trang</th>
               <th className="p-3 text-left">Giá Bán</th>
               <th className="p-3 text-left">Số Lượng</th>
@@ -175,40 +175,60 @@ const BookManagementPage = () => {
           </thead>
           <tbody>
             {currentBooks.map((book, index) => (
-              <tr key={book._id} className={`border-t ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}>
-                <td className="p-3 font-semibold text-gray-700">#{startIndex + index + 1}</td>
+              <tr
+                key={book._id}
+                className={`border-t ${index % 2 === 0 ? "bg-white" : "bg-gray-50"}`}
+              >
+                <td className="p-3 font-semibold text-gray-700">
+                  #{startIndex + index + 1}
+                </td>
                 <td className="p-3 text-gray-700">{book.ISSN || "-"}</td>
                 <td className="p-3 font-medium text-blue-700">{book.title}</td>
                 <td className="p-3">{book.author}</td>
                 <td className="p-3">{book.category?.name || "Chưa phân loại"}</td>
                 <td className="p-3">{book.publishYear || "-"}</td>
+                <td className="p-3">{book.volume ? `Tập ${book.volume}` : "Không có"}</td> {/* ✅ hiển thị tập */}
                 <td className="p-3">{book.pages || "-"}</td>
-                <td className="p-3 font-semibold text-gray-800">{book.price?.toLocaleString()} ₫</td>
+                <td className="p-3 font-semibold text-gray-800">
+                  {book.price?.toLocaleString()} ₫
+                </td>
                 <td className="p-3">
                   <span
                     className={`px-2 py-1 text-sm rounded-full ${
-                      (book.quantity || 0) > 40
+                      (book.stock || 0) > 40
                         ? "bg-green-100 text-green-700"
-                        : (book.quantity || 0) > 20
+                        : (book.stock || 0) > 20
                         ? "bg-yellow-100 text-yellow-700"
                         : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {book.quantity || 0}
+                    {book.stock || 0}
                   </span>
                 </td>
                 <td className="p-3 text-center">
                   {book.coverImage ? (
-                    <img src={book.coverImage} alt={book.title} className="w-12 h-16 object-cover rounded-md border inline-block" />
+                    <img
+                      src={book.coverImage}
+                      alt={book.title}
+                      className="w-12 h-16 object-cover rounded-md border inline-block"
+                    />
                   ) : (
-                    <div className="w-12 h-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-500 text-sm mx-auto">N/A</div>
+                    <div className="w-12 h-16 bg-gray-200 rounded-md flex items-center justify-center text-gray-500 text-sm mx-auto">
+                      N/A
+                    </div>
                   )}
                 </td>
                 <td className="p-3 text-center flex gap-3 justify-center">
-                  <button onClick={() => handleEdit(book)} className="text-blue-600 hover:text-blue-800">
+                  <button
+                    onClick={() => handleEdit(book)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
                     <Edit2 size={18} />
                   </button>
-                  <button onClick={() => handleDelete(book._id, book.title)} className="text-red-600 hover:text-red-800">
+                  <button
+                    onClick={() => handleDelete(book._id, book.title)}
+                    className="text-red-600 hover:text-red-800"
+                  >
                     <Trash2 size={18} />
                   </button>
                 </td>
@@ -217,7 +237,7 @@ const BookManagementPage = () => {
 
             {currentBooks.length === 0 && (
               <tr>
-                <td colSpan="11" className="text-center py-6 text-gray-500">
+                <td colSpan="12" className="text-center py-6 text-gray-500">
                   Không tìm thấy sách nào phù hợp.
                 </td>
               </tr>
@@ -232,17 +252,23 @@ const BookManagementPage = () => {
               onClick={handlePrevPage}
               disabled={currentPage === 1}
               className={`px-4 py-2 rounded-md border ${
-                currentPage === 1 ? "text-gray-400 border-gray-200 cursor-not-allowed" : "text-blue-600 border-blue-300 hover:bg-blue-50"
+                currentPage === 1
+                  ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                  : "text-blue-600 border-blue-300 hover:bg-blue-50"
               }`}
             >
               « Trước
             </button>
-            <span className="text-gray-700">Trang {currentPage} / {totalPages}</span>
+            <span className="text-gray-700">
+              Trang {currentPage} / {totalPages}
+            </span>
             <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
               className={`px-4 py-2 rounded-md border ${
-                currentPage === totalPages ? "text-gray-400 border-gray-200 cursor-not-allowed" : "text-blue-600 border-blue-300 hover:bg-blue-50"
+                currentPage === totalPages
+                  ? "text-gray-400 border-gray-200 cursor-not-allowed"
+                  : "text-blue-600 border-blue-300 hover:bg-blue-50"
               }`}
             >
               Sau »
@@ -252,7 +278,11 @@ const BookManagementPage = () => {
       </div>
 
       {/* Modals */}
-      <AddBookModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onBookAdded={fetchBooks} />
+      <AddBookModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onBookAdded={fetchBooks}
+      />
 
       <EditBookModal
         isOpen={isEditModalOpen}

@@ -17,6 +17,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }) {
     pages: "",
     description: "",
     coverImage: null,
+     volume: "",
   });
 
   useEffect(() => {
@@ -48,36 +49,45 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }) {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setMessage(null);
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  setMessage(null);
 
-    try {
-      const formDataToSend = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (formData[key]) formDataToSend.append(key, formData[key]);
-      });
+  try {
+    const formDataToSend = new FormData();
 
-      const res = await fetch("http://localhost:5000/api/books", {
-        method: "POST",
-        body: formDataToSend,
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setMessage({ type: "success", text: "Thêm sách thành công!" });
-        onBookAdded();
-        setTimeout(() => onClose(), 1000);
-      } else {
-        setMessage({ type: "error", text: data.message || "Lỗi khi thêm sách!" });
+    // 🧩 Đảm bảo gửi tất cả field, kể cả volume rỗng
+    Object.keys(formData).forEach((key) => {
+      if (key === "volume") {
+        formDataToSend.append("volume", formData.volume || "");
+      } else if (formData[key]) {
+        formDataToSend.append(key, formData[key]);
       }
-    } catch (error) {
-      setMessage({ type: "error", text: "Lỗi khi thêm sách!" });
-    } finally {
-      setIsSubmitting(false);
+    });
+
+    const res = await fetch("http://localhost:5000/api/books", {
+      method: "POST",
+      body: formDataToSend,
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setMessage({ type: "success", text: "Thêm sách thành công!" });
+      onBookAdded();
+      setTimeout(() => onClose(), 1000);
+    } else {
+      setMessage({ type: "error", text: data.message || "Lỗi khi thêm sách!" });
     }
-  };
+  } catch (error) {
+    console.error("❌ Lỗi khi gửi FormData:", error);
+    setMessage({ type: "error", text: "Lỗi khi thêm sách!" });
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   if (!isOpen) return null;
 
@@ -157,6 +167,22 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }) {
               ))}
             </select>
           </div>
+               {/* Volume (Tập sách) */}
+            <div className="grid grid-cols-2 gap-4">
+              <select
+                name="volume"
+                value={formData.volume}
+                onChange={handleInputChange}
+                className="border p-2 rounded-lg"
+              >
+                <option value="">Không có tập</option>
+                {[...Array(50)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    Tập {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
 
           {/* Price + Year + Pages */}
           <div className="grid grid-cols-3 gap-4">
@@ -188,7 +214,7 @@ export default function AddBookModal({ isOpen, onClose, onBookAdded }) {
               required
             />
           </div>
-
+             
           {/* Description */}
           <textarea
             name="description"

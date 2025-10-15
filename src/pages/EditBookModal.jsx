@@ -13,6 +13,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
     price: 0,
     publishYear: "",
     pages: "",
+    volume: "",
     description: "",
     coverImage: "",
   });
@@ -34,6 +35,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
     fetchCategories();
   }, []);
 
+  // Khi mở modal chỉnh sửa
   useEffect(() => {
     if (book) {
       setFormData({
@@ -44,6 +46,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
         price: book.price || 0,
         publishYear: book.publishYear || "",
         pages: book.pages || "",
+        volume: book.volume || "",
         description: book.description || "",
         coverImage: book.coverImage || "",
       });
@@ -60,7 +63,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
   };
 
   const handleCategoryChange = (value) => {
-    setFormData({ ...formData, category: value }); // chỉ gửi _id
+    setFormData({ ...formData, category: value });
   };
 
   const handleImageChange = (e) => {
@@ -74,10 +77,11 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
       data.append("title", formData.title);
       data.append("author", formData.author);
       data.append("ISSN", formData.ISSN);
-      data.append("category", formData.category); // _id
+      data.append("category", formData.category);
       data.append("price", formData.price);
       data.append("publishYear", formData.publishYear);
       data.append("pages", formData.pages);
+      data.append("volume", formData.volume);
       data.append("description", formData.description);
       if (newImage) data.append("coverImage", newImage);
 
@@ -120,14 +124,22 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
           Tên sách:
           <Input name="title" value={formData.title} onChange={handleChange} />
         </label>
+
         <label>
           Tác giả:
           <Input name="author" value={formData.author} onChange={handleChange} />
         </label>
+
         <label>
           ISSN:
-          <Input name="ISSN" value={formData.ISSN} onChange={handleChange} />
+          <Input
+            name="ISSN"
+            value={formData.ISSN}
+            disabled
+            style={{ backgroundColor: "#f5f5f5", cursor: "not-allowed" }}
+          />
         </label>
+
         <label>
           Thể loại:
           <Select
@@ -142,6 +154,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
             ))}
           </Select>
         </label>
+
         <label>
           Giá:
           <InputNumber
@@ -149,20 +162,37 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
             onChange={handlePriceChange}
             style={{ width: "100%" }}
             min={0}
+            formatter={(value) =>
+              `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+            }
+            parser={(value) => value.replace(/,/g, "")}
           />
         </label>
+
         <label>
-          Năm sản xuất:
+          Năm xuất bản:
           <Input
             name="publishYear"
             value={formData.publishYear}
             onChange={handleChange}
           />
         </label>
+
         <label>
           Số trang:
           <Input name="pages" value={formData.pages} onChange={handleChange} />
         </label>
+
+        <label>
+          Tập sách:
+          <Input
+            name="volume"
+            value={formData.volume}
+            onChange={handleChange}
+            placeholder="VD: Tập 1, Quyển 2..."
+          />
+        </label>
+
         <label>
           Mô tả:
           <Input.TextArea
@@ -172,6 +202,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
             rows={3}
           />
         </label>
+
         <label>
           Ảnh bìa:
           <input type="file" accept="image/*" onChange={handleImageChange} />

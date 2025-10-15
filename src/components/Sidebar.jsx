@@ -26,7 +26,7 @@ const sidebarLinks = [
   },
   {
     title: "Kho hàng",
-    href: "/inventory",
+    href: "/bookInventoryPage",
     icon: Warehouse,
   },
   {

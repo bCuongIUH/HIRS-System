@@ -23,6 +23,9 @@ import ImportGoods from "./pages/ImportGoods"
 import DetailOrders from "./pages/DetailOrders"
 import RevenueDashboard from "./pages/ThongKe"
 import BookManagementPage from "./pages/BookManagementPage"
+import ImportBooksPage from "./pages/khohang/ImportBookPage"
+import BookInventoryPage from "./pages/khohang/BookInventoryPage"
+
 
 // Bảo vệ route yêu cầu xác thực cho Admin
 const RequireAuth = ({ children }) => {
@@ -128,6 +131,8 @@ function App() {
 
           <Route path="book-management" element={<BookManagementPage />} />
       
+        <Route path="bookInventoryPage" element={<BookInventoryPage />} />
+        <Route path="importBookPage" element={<ImportBooksPage />} />
         </Route>
 
         {/* Route không tồn tại */}
