@@ -26,6 +26,7 @@ import BookManagementPage from "./pages/BookManagementPage"
 import ImportBooksPage from "./pages/khohang/ImportBookPage"
 import BookInventoryPage from "./pages/khohang/BookInventoryPage"
 import PromotionForm from "./pages/khuyenmai/PromotionForm"
+import WarehouseListPage from "./pages/khohang/WarehouseListPage"
 
 
 
@@ -137,6 +138,7 @@ function App() {
         <Route path="importBookPage" element={<ImportBooksPage />} />
 
              <Route path="promotionForm" element={<PromotionForm />} />
+             <Route path="warehouseListPage" element={<WarehouseListPage />} />
         </Route>
 
         {/* Route không tồn tại */}

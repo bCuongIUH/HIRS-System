@@ -247,10 +247,10 @@ export default function ImportBooksPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] p-8">
+    <div className="h-screen w-screen bg-[#fafafa] p-4 overflow-auto">
       <div className="max-w-[100%] mx-auto space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
+       <div className="flex items-center justify-between mb-2">
           <Button
             type="text"
             icon={<ArrowLeftOutlined />}

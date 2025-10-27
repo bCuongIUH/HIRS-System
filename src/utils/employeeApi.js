@@ -56,13 +56,3 @@ export const deleteEmployee = async (id, options = {}) => {
     throw new Error(error.response?.data?.error || "Lỗi khi xóa nhân viên")
   }
 }
-
-// Lấy nhân viên theo phòng ban
-export const getEmployeesByDepartment = async (departmentId) => {
-  try {
-    const response = await api.get(`/employees/department/${departmentId}`)
-    return response.data
-  } catch (error) {
-    throw new Error(error.response?.data?.error || "Lỗi khi lấy nhân viên theo phòng ban")
-  }
-}
