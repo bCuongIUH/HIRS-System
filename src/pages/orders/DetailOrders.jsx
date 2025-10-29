@@ -2,33 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { Search, MoreHorizontal, Package, Clock, CheckCircle, XCircle, AlertTriangle, Filter } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 
-// Mock API
-const getOrders = async () => {
-  return {
-    data: [
-      {
-        _id: "1",
-        orderId: "DH001",
-        customerName: "Nguyễn Văn An",
-        customerEmail: "nguyenvanan@email.com",
-        orderDate: "2024-12-20",
-        status: "delivered",
-        totalAmount: 450000,
-        items: [
-          { productName: "Sách Lập trình JavaScript", quantity: 2, price: 200000 },
-          { productName: "Sách React và Next.js", quantity: 1, price: 250000 },
-        ],
-        returnRequest: {
-          status: "requested",
-          requestDate: "2024-12-22",
-          reason: "Sách bị lỗi in",
-          canReturn: true,
-        },
-      },
-    ],
-  }
-}
 
 function DetailOrders() {
   const [orders, setOrders] = useState([])
@@ -37,36 +12,57 @@ function DetailOrders() {
   const [returnFilter, setReturnFilter] = useState("all")
   const [activeDropdown, setActiveDropdown] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true)
-      const res = await getOrders()
-      setOrders(res.data)
-      setIsLoading(false)
+      try {
+        setIsLoading(true)
+        const res = await fetch("http://localhost:5000/api/orders")
+        const result = await res.json()
+
+        if (result.success && result.orders) {
+          const mappedOrders = result.orders.map((o) => ({
+            _id: o._id,
+            orderId: o.orderCode,
+            customerName: o.shippingAddress?.fullName ?? "Không rõ",
+            customerEmail: o.shippingAddress?.email ?? "Không có",
+            orderDate: o.createdAt,
+            totalAmount: o.total,
+            status: o.status,
+            items: o.items,
+            returnRequest: null,
+          }))
+          setOrders(mappedOrders)
+        }
+      } catch (err) {
+        console.error("❌ Error fetching orders:", err)
+      } finally {
+        setIsLoading(false)
+      }
     }
     fetchData()
   }, [])
 
-  // Hàm xử lý lọc dữ liệu
   const filteredOrders = orders.filter((o) => {
     const matchSearch =
       o.orderId.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.customerName.toLowerCase().includes(searchTerm.toLowerCase())
+
     const matchStatus = statusFilter === "all" || o.status === statusFilter
+
     const matchReturn =
       returnFilter === "all" ||
       (returnFilter === "none" && !o.returnRequest) ||
       (o.returnRequest && o.returnRequest.status === returnFilter)
+
     return matchSearch && matchStatus && matchReturn
   })
 
-  // Hàm format tiền
   const formatCurrency = (num) => {
     return num.toLocaleString("vi-VN", { style: "currency", currency: "VND" })
   }
 
-  // Trạng thái đơn hàng
   const getStatusInfo = (status) => {
     switch (status) {
       case "pending":
@@ -84,22 +80,11 @@ function DetailOrders() {
     }
   }
 
-  // Trạng thái hoàn trả
   const getReturnStatusInfo = (returnRequest) => {
-    if (!returnRequest) return { label: "Không có", className: "bg-gray-100 text-gray-800" }
-    switch (returnRequest.status) {
-      case "requested":
-        return { label: "Yêu cầu", className: "bg-yellow-100 text-yellow-800" }
-      case "approved":
-        return { label: "Chấp nhận", className: "bg-green-100 text-green-800" }
-      case "rejected":
-        return { label: "Từ chối", className: "bg-red-100 text-red-800" }
-      default:
-        return { label: "Không rõ", className: "bg-gray-100 text-gray-800" }
-    }
+    if (!returnRequest) return { label: "Không", className: "bg-gray-100 text-gray-800" }
+    return { label: "Yêu cầu", className: "bg-yellow-100 text-yellow-800" }
   }
 
-  // Cho phép hoàn trả trong 7 ngày
   const canReturnOrder = (orderDate) => {
     const now = new Date()
     const order = new Date(orderDate)
@@ -107,25 +92,26 @@ function DetailOrders() {
     return diffDays <= 7
   }
 
-  // Toggle dropdown
   const toggleDropdown = (id) => {
     setActiveDropdown(activeDropdown === id ? null : id)
   }
 
-  // Xử lý hoàn trả
   const handleReturnRequest = (orderId, action) => {
     alert(`Đơn hàng ${orderId} - ${action === "approve" ? "Chấp nhận" : "Từ chối"} hoàn trả`)
     setActiveDropdown(null)
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-10xl mx-auto space-y-6">
+
+        {/* Tiêu đề */}
         <div className="bg-white rounded-lg shadow-sm p-6 border">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý Đơn hàng</h1>
           <p className="text-gray-600">Theo dõi và quản lý tất cả đơn hàng của khách hàng</p>
         </div>
 
+        {/* Bộ lọc + tìm kiếm */}
         <div className="bg-white rounded-lg shadow-sm p-6 border">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
@@ -138,6 +124,7 @@ function DetailOrders() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
             <div className="flex gap-3">
               <div className="relative">
                 <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -154,6 +141,7 @@ function DetailOrders() {
                   <option value="cancelled">Đã hủy</option>
                 </select>
               </div>
+
               <select
                 value={returnFilter}
                 onChange={(e) => setReturnFilter(e.target.value)}
@@ -169,53 +157,30 @@ function DetailOrders() {
           </div>
         </div>
 
+        {/* Table */}
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Mã đơn hàng
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Khách hàng
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Ngày đặt
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Tổng tiền
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Trạng thái
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Hoàn trả
-                  </th>
-                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                    Thao tác
-                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Mã đơn hàng</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Khách hàng</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Ngày đặt</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tổng tiền</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Trạng thái</th>
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Hoàn trả</th>
+                  <th className="px-6 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Thao tác</th>
                 </tr>
               </thead>
+
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center space-y-3">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                        <p className="text-gray-500">Đang tải dữ liệu...</p>
-                      </div>
-                    </td>
+                    <td colSpan={7} className="px-6 py-12 text-center">Đang tải dữ liệu...</td>
                   </tr>
                 ) : filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="px-6 py-12 text-center">
-                      <div className="flex flex-col items-center justify-center space-y-3">
-                        <Package className="h-12 w-12 text-gray-400" />
-                        <p className="text-gray-500 text-lg">Không có đơn hàng nào</p>
-                        <p className="text-gray-400 text-sm">Thử thay đổi bộ lọc để xem thêm kết quả</p>
-                      </div>
-                    </td>
+                    <td colSpan={7} className="px-6 py-12 text-center text-gray-500">Không có đơn hàng</td>
                   </tr>
                 ) : (
                   filteredOrders.map((order) => {
@@ -225,62 +190,67 @@ function DetailOrders() {
                     const canReturn = canReturnOrder(order.orderDate)
 
                     return (
-                      <tr key={order._id} className="hover:bg-gray-50 transition-colors duration-150">
+                      <tr
+                        key={order._id}
+                        onClick={() => navigate(`/orders/${order._id}`)}
+                        className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">{order.orderId}</td>
+
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{order.orderId}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{order.customerName}</div>
+                          <div className="font-medium text-gray-900">{order.customerName}</div>
                           <div className="text-sm text-gray-500">{order.customerEmail}</div>
                         </td>
+
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {new Date(order.orderDate).toLocaleDateString("vi-VN")}
-                          </div>
+                          {new Date(order.orderDate).toLocaleDateString("vi-VN")}
                           {canReturn && (
                             <div className="text-xs text-green-600 font-medium mt-1">✓ Có thể hoàn trả</div>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-gray-900">{formatCurrency(order.totalAmount)}</div>
+
+                        <td className="px-6 py-4 whitespace-nowrap font-semibold">
+                          {formatCurrency(order.totalAmount)}
                         </td>
+
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}
-                          >
-                            <StatusIcon className="w-3 h-3 mr-1.5" />
-                            {statusInfo.label}
+                          <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${statusInfo.className}`}>
+                            <StatusIcon className="w-3 h-3 mr-1" /> {statusInfo.label}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${returnStatusInfo.className}`}
-                          >
+
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${returnStatusInfo.className}`}>
                             {returnStatusInfo.label}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-center">
+
+                        <td
+                          className="px-6 py-4 whitespace-nowrap text-center"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <div className="relative">
                             <button
                               onClick={() => toggleDropdown(order._id)}
-                              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-150"
+                              className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex justify-center items-center"
                             >
                               <MoreHorizontal className="w-4 h-4 text-gray-600" />
                             </button>
-                            {activeDropdown === order._id && (
-                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                                <button
-                                  onClick={() => handleReturnRequest(order._id, "approve")}
-                                  className="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors duration-150"
-                                >
-                                  ✓ Chấp nhận hoàn trả
-                                </button>
-                                <button
-                                  onClick={() => handleReturnRequest(order._id, "reject")}
-                                  className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors duration-150"
-                                >
-                                  ✗ Từ chối hoàn trả
-                                </button>
+
+                             {activeDropdown === order._id && (
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                              <button
+                                onClick={() => handleReturnRequest(order._id, "approve")}
+                                className="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
+                              >
+                                ✓ Chấp nhận hoàn trả
+                              </button>
+                              <button
+                                onClick={() => handleReturnRequest(order._id, "reject")}
+                                className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                              >
+                                ✗ Từ chối hoàn trả
+                              </button>
                               </div>
                             )}
                           </div>
@@ -293,6 +263,7 @@ function DetailOrders() {
             </table>
           </div>
         </div>
+
       </div>
     </div>
   )

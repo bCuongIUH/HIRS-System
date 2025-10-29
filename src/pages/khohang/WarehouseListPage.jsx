@@ -17,9 +17,13 @@ export default function WarehouseListPage() {
     try {
       setLoading(true)
       const res = await axios.get("http://localhost:5000/api/warehouse")
-      if (res.data.success) {
-        setData(res.data.data)
-      }
+    if (res.data.success) {
+      const sorted = res.data.data.sort(
+        (a, b) => new Date(b.date) - new Date(a.date)
+      )
+      setData(sorted)
+    }
+
     } catch (error) {
       message.error("Không thể tải danh sách phiếu nhập!")
     } finally {
@@ -149,6 +153,12 @@ const handleClose = () => {
             dataIndex: ["book", "title"],
             key: "title",
             width: "40%",
+          },
+          {
+            title: "Tập",
+            dataIndex: ["volume"],
+            key: "volume",
+            width: "10%",
           },
           {
             title: "Số lượng",

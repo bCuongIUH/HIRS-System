@@ -148,6 +148,7 @@ export default function ImportBooksPage() {
     if (!selectedBook) return message.warning("Vui lòng chọn sách từ danh sách gợi ý");
     if (!quantity || quantity <= 0) return message.warning("Vui lòng nhập số lượng hợp lệ");
     if (!importPrice || importPrice <= 0) return message.warning("Vui lòng nhập giá nhập hợp lệ");
+    if (!selectedBook.volume) return message.warning("Vui lòng chọn tập sách");
 
     const newItem = {
       key: `${selectedBook._id}-${Date.now()}`,
@@ -183,6 +184,7 @@ export default function ImportBooksPage() {
           book: item._id,
           quantity: item.quantity,
           importPrice: item.importPrice,
+          volume: item.volume,
           total: item.quantity * item.importPrice,
         })),
       });

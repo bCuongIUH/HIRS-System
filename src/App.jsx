@@ -20,13 +20,14 @@ import CustomerPage from "./pages/CustomerPage"
 import Customers from "./pages/CustomerPage"
 import Inventory from "./pages/Inventory"
 import ImportGoods from "./pages/ImportGoods"
-import DetailOrders from "./pages/DetailOrders"
+import DetailOrders from "./pages/orders/DetailOrders"
 import RevenueDashboard from "./pages/ThongKe"
 import BookManagementPage from "./pages/BookManagementPage"
 import ImportBooksPage from "./pages/khohang/ImportBookPage"
 import BookInventoryPage from "./pages/khohang/BookInventoryPage"
 import PromotionForm from "./pages/khuyenmai/PromotionForm"
 import WarehouseListPage from "./pages/khohang/WarehouseListPage"
+import OrderDetail from "./pages/orders/OrderDetail"
 
 
 
@@ -127,6 +128,8 @@ function App() {
           <Route path="inventory" element={<Inventory />} />
           <Route path="import-goods" element={<ImportGoods />} />
           <Route path="orders" element={<DetailOrders />} />
+          <Route path="/orders/:id" element={<OrderDetail />} />
+
           <Route path="departments" element={<Departments />} />
           <Route path="settings" element={<Settings />} />
           
