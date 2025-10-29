@@ -729,6 +729,7 @@
 
 import { useState, useEffect } from "react"
 import { message, Modal } from "antd"
+import { Book } from "lucide-react"
 
 // ------------------ ICONS ------------------
 const PercentIcon = () => (
@@ -1183,7 +1184,7 @@ export default function PromotionForm() {
                 }`}
                 onClick={() => setDiscountType("by-book")}
               >
-                <BookIcon /> Giảm theo sách
+                <Book /> Giảm theo sách
               </button>
             </div>
           </div>

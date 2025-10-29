@@ -11,8 +11,8 @@ const BookManagementPage = () => {
   const [loading, setLoading] = useState(true);
 
   // modal states
-  const [isModalOpen, setIsModalOpen] = useState(false); // add modal
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false); // edit modal
+  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false); 
   const [editingBook, setEditingBook] = useState(null);
 
   // pagination
@@ -103,7 +103,7 @@ const BookManagementPage = () => {
     );
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       {/* Header */}
       <div className="sticky top-0 bg-gray-50 pb-4 z-10">
         <div className="flex items-center justify-between mb-4">

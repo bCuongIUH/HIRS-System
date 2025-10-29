@@ -247,7 +247,7 @@ export default function ImportBooksPage() {
   ];
 
   return (
-    <div className="h-screen w-screen bg-[#fafafa] p-4 overflow-auto">
+     <div className="min-h-screen bg-[#fafafa]">
       <div className="max-w-[100%] mx-auto space-y-6">
         {/* Header */}
        <div className="flex items-center justify-between mb-2">
@@ -275,14 +275,14 @@ export default function ImportBooksPage() {
             />
             {selectedBook && (
               <Card>
-                <Text strong>{selectedBook.title}</Text> - {selectedBook.volume || "Tập đơn"}
+                <Text strong>{selectedBook.title}</Text> - Tập {selectedBook.volume || "Tập đơn"}
                 <div className="mt-2 grid grid-cols-2 gap-4">
                   <div>
                     <Text>Số lượng</Text>
                     <InputNumber min={1} value={quantity} onChange={setQuantity} className="w-full" />
                   </div>
                   <div>
-                    <Text>Giá nhập (₫)</Text>
+                    <Text>Giá nhập(1) (₫) </Text>
                     <InputNumber
                       min={0}
                       value={importPrice}

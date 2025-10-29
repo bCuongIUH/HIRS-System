@@ -17,7 +17,7 @@ function Header({ sidebarOpen, setSidebarOpen }) {
         <span className="sr-only">Toggle Menu</span>
       </button>
 
-      <div className="relative flex-1 md:grow-0 md:w-80">
+      {/* <div className="relative flex-1 md:grow-0 md:w-80">
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
         <input
           type="search"
@@ -26,7 +26,7 @@ function Header({ sidebarOpen, setSidebarOpen }) {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-      </div>
+      </div> */}
 
       <div className="ml-auto flex items-center gap-4">
         <button className="relative rounded-md border p-2 hover:bg-gray-100">
