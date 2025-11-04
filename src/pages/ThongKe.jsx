@@ -1,166 +1,271 @@
-import React, { useState } from "react"
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, ResponsiveContainer, BarChart, Bar } from "recharts"
-import { CalendarDays, TrendingUp, Users, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react"
+"use client"
 
-// Mock data
-const revenueData = [
-  { date: "01/01", daily: 12500000, monthly: 375000000, yearly: 4500000000 },
-  { date: "02/01", daily: 15200000, monthly: 456000000, yearly: 5472000000 },
-  { date: "03/01", daily: 11800000, monthly: 354000000, yearly: 4248000000 },
-  { date: "04/01", daily: 18900000, monthly: 567000000, yearly: 6804000000 },
-  { date: "05/01", daily: 16700000, monthly: 501000000, yearly: 6012000000 },
-  { date: "06/01", daily: 14300000, monthly: 429000000, yearly: 5148000000 },
-  { date: "07/01", daily: 19800000, monthly: 594000000, yearly: 7128000000 },
-  { date: "08/01", daily: 17500000, monthly: 525000000, yearly: 6300000000 },
-  { date: "09/01", daily: 13900000, monthly: 417000000, yearly: 5004000000 },
-  { date: "10/01", daily: 21200000, monthly: 636000000, yearly: 7632000000 },
-  { date: "11/01", daily: 18600000, monthly: 558000000, yearly: 6696000000 },
-  { date: "12/01", daily: 22400000, monthly: 672000000, yearly: 8064000000 },
-]
+import { useEffect, useState } from "react"
+import axios from "axios"
 
-const customerRevenueData = [
-  { customer: "Nguyễn V.A", revenue: 245000000 },
-  { customer: "Trần T.B", revenue: 198000000 },
-  { customer: "Lê M.C", revenue: 187000000 },
-  { customer: "Phạm T.D", revenue: 165000000 },
-  { customer: "Hoàng V.E", revenue: 142000000 },
-]
+export default function Home() {
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
 
-const topCustomers = [
-  { name: "Nguyễn Văn An", orders: 156, revenue: 245000000, growth: 12.5 },
-  { name: "Trần Thị Bình", orders: 142, revenue: 198000000, growth: 8.3 },
-  { name: "Lê Minh Cường", orders: 128, revenue: 187000000, growth: -2.1 },
-  { name: "Phạm Thị Dung", orders: 119, revenue: 165000000, growth: 15.7 },
-  { name: "Hoàng Văn Em", orders: 103, revenue: 142000000, growth: 6.9 },
-]
+  // 📌 Chuyển Date object sang dd/mm/yyyy để hiển thị
+  const formatForDisplay = (date) => {
+    const d = new Date(date)
+    const day = String(d.getDate()).padStart(2, "0")
+    const month = String(d.getMonth() + 1).padStart(2, "0")
+    const year = d.getFullYear()
+    return `${day}/${month}/${year}`
+  }
 
-const formatCurrency = (amount) =>
-  new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", minimumFractionDigits: 0 }).format(amount)
+  // 📌 Chuyển dd/mm/yyyy sang YYYY-MM-DD để gửi API
+  const formatForApi = (dateStr) => {
+    const [day, month, year] = dateStr.split("/")
+    return `${year}-${month}-${day}`
+  }
 
-const formatNumber = (num) => new Intl.NumberFormat("vi-VN").format(num)
+  // 📊 Hàm gọi API thống kê (có lọc theo ngày)
+  const fetchStats = async () => {
+    setLoading(true)
+    try {
+      const res = await axios.get("http://localhost:5000/api/statistics", {
+        params: {
+          startDate: startDate ? formatForApi(startDate) : undefined,
+          endDate: endDate ? formatForApi(endDate) : undefined,
+        },
+      })
+      setStats(res.data)
+    } catch (err) {
+      console.error("Lỗi khi lấy thống kê:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
-export default function RevenueDashboard() {
-  const [timePeriod, setTimePeriod] = useState("monthly")
+  // 🔹 Khi mở trang lần đầu → set ngày mặc định là hôm nay
+  useEffect(() => {
+    const today = new Date()
+    const formatted = formatForDisplay(today)
+    setStartDate(formatted)
+    setEndDate(formatted)
+  }, [])
 
-  const getCurrentData = () =>
-    revenueData.map((item) => ({
-      ...item,
-      value: item[timePeriod],
-    }))
+  // 🔹 Khi startDate và endDate có giá trị → gọi API
+  useEffect(() => {
+    if (startDate && endDate) {
+      fetchStats()
+    }
+  }, [startDate, endDate])
 
-  const totalRevenue = getCurrentData().reduce((sum, item) => sum + item.value, 0)
-  const avgRevenue = totalRevenue / getCurrentData().length
-  const growth = 12.8
+  if (!stats && loading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
+        Đang tải dữ liệu thống kê...
+      </main>
+    )
+  }
 
-  return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 p-6">
-      <div className="max-w-10xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold">Thống kê doanh thu</h1>
-            <p className="text-gray-500 mt-1">Theo dõi và phân tích doanh thu kinh doanh</p>
-          </div>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setTimePeriod("daily")}
-              className={`px-3 py-1 rounded ${timePeriod === "daily" ? "bg-blue-500 text-white" : "bg-white border"}`}
-            >
-              Ngày
-            </button>
-            <button
-              onClick={() => setTimePeriod("monthly")}
-              className={`px-3 py-1 rounded ${timePeriod === "monthly" ? "bg-blue-500 text-white" : "bg-white border"}`}
-            >
-              Tháng
-            </button>
-            <button
-              onClick={() => setTimePeriod("yearly")}
-              className={`px-3 py-1 rounded ${timePeriod === "yearly" ? "bg-blue-500 text-white" : "bg-white border"}`}
-            >
-              Năm
-            </button>
-          </div>
-        </div>
+  if (!stats) {
+    return (
+      <main className="min-h-screen flex items-center justify-center text-gray-600 text-lg">
+        Không có dữ liệu thống kê
+      </main>
+    )
+  }
 
-        {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-4 bg-white shadow rounded">
-            <div className="flex justify-between">
-              <p className="text-sm text-gray-500">Tổng doanh thu</p>
-              <DollarSign className="h-4 w-4 text-gray-400" />
+  const booksData = stats.topProducts || []
+  const totalRevenue = stats.totalRevenue || 0
+  const totalSales = stats.totalBooksSold || 0
+  const totalCustomers = stats.totalCustomers || 0
+  const avgOrderValue = totalSales ? Math.round(totalRevenue / totalSales) : 0
+  const maxSales = Math.max(...(booksData.map((b) => b.totalQuantity) || [0]))
+  const topCustomers = stats.topCustomers || []
+
+  const StatCard = ({ title, value, change, bgColor }) => (
+    <div className={`${bgColor} rounded-lg p-6 text-white`}>
+      <p className="text-sm font-medium opacity-90">{title}</p>
+      <p className="text-3xl font-bold mt-2">{value}</p>
+      <p className="text-xs mt-3 opacity-75">{change}</p>
+    </div>
+  )
+
+  const BarChart = ({ data, maxValue, color }) => (
+    <div className="bg-white border border-gray-200 rounded-lg p-6">
+      <h3 className="text-lg font-semibold text-gray-800 mb-6">Sản Phẩm Bán Chạy Nhất</h3>
+      <div className="space-y-4">
+        {data.map((item, idx) => {
+          const percentage = (item.totalQuantity / maxValue) * 100
+          return (
+            <div key={idx}>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">{item.title}</span>
+                <span className="text-sm font-bold text-gray-900">{item.totalQuantity} sp</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-3">
+                <div
+                  className={`h-full rounded-full transition-all ${color}`}
+                  style={{ width: `${percentage}%` }}
+                ></div>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">₫ {item.totalRevenue.toLocaleString()}</div>
             </div>
-            <p className="text-2xl font-bold">{formatCurrency(totalRevenue)}</p>
-          </div>
-
-          <div className="p-4 bg-white shadow rounded">
-            <div className="flex justify-between">
-              <p className="text-sm text-gray-500">Doanh thu TB</p>
-              <TrendingUp className="h-4 w-4 text-gray-400" />
-            </div>
-            <p className="text-2xl font-bold">{formatCurrency(avgRevenue)}</p>
-          </div>
-
-          <div className="p-4 bg-white shadow rounded">
-            <div className="flex justify-between">
-              <p className="text-sm text-gray-500">Tổng đơn hàng</p>
-              <CalendarDays className="h-4 w-4 text-gray-400" />
-            </div>
-            <p className="text-2xl font-bold">{formatNumber(1247)}</p>
-          </div>
-
-          <div className="p-4 bg-white shadow rounded">
-            <div className="flex justify-between">
-              <p className="text-sm text-gray-500">KH hoạt động</p>
-              <Users className="h-4 w-4 text-gray-400" />
-            </div>
-            <p className="text-2xl font-bold">{formatNumber(892)}</p>
-          </div>
-        </div>
-
-        {/* Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white p-4 rounded shadow col-span-2">
-            <h2 className="font-semibold mb-2">Biểu đồ doanh thu</h2>
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={getCurrentData()}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis tickFormatter={(v) => `${v / 1000000}tr`} />
-                  <Area type="monotone" dataKey="value" stroke="#3b82f6" fill="#93c5fd" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="font-semibold mb-2">Doanh thu khách hàng</h2>
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={customerRevenueData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="customer" />
-                  <YAxis tickFormatter={(v) => `${v / 1000000}tr`} />
-                  <Bar dataKey="revenue" fill="#10b981" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded shadow">
-            <h2 className="font-semibold mb-2">Top khách hàng</h2>
-            <ul className="space-y-2">
-              {topCustomers.map((c, i) => (
-                <li key={i} className="flex justify-between border-b pb-1">
-                  <span>{c.name} ({c.orders} đơn)</span>
-                  <span>{formatCurrency(c.revenue)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+          )
+        })}
       </div>
     </div>
+  )
+
+  const PieChart = ({ data }) => {
+    const total = data.reduce((sum, item) => sum + item.totalQuantity, 0)
+    let startAngle = 0
+    const colors = ["#3b82f6", "#ef4444", "#10b981", "#f59e0b", "#8b5cf6"]
+
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Tỷ Lệ Bán Sản Phẩm</h3>
+        <svg viewBox="0 0 200 200" className="w-full max-w-xs mx-auto mb-4">
+          {data.map((item, idx) => {
+            const sliceAngle = (item.totalQuantity / total) * 360
+            const radius = 80
+            const x1 = 100 + radius * Math.cos((startAngle * Math.PI) / 180)
+            const y1 = 100 + radius * Math.sin((startAngle * Math.PI) / 180)
+            const x2 = 100 + radius * Math.cos(((startAngle + sliceAngle) * Math.PI) / 180)
+            const y2 = 100 + radius * Math.sin(((startAngle + sliceAngle) * Math.PI) / 180)
+            const largeArc = sliceAngle > 180 ? 1 : 0
+            const path = `M 100 100 L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`
+            startAngle += sliceAngle
+            return <path key={idx} d={path} fill={colors[idx]} opacity="0.8" />
+          })}
+        </svg>
+        <div className="space-y-2">
+          {data.map((item, idx) => (
+            <div key={idx} className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: colors[idx] }}></div>
+                <span className="text-gray-700">{item.title}</span>
+              </div>
+              <span className="font-semibold text-gray-900">
+                {Math.round((item.totalQuantity / total) * 100)}%
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  const CustomerTable = ({ data }) => (
+    <div className="bg-white border border-gray-200 rounded-lg p-6 mt-8 overflow-x-auto">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Thống Kê Khách Hàng</h3>
+      <table className="w-full text-sm">
+        <thead className="border-b border-gray-300">
+          <tr className="text-gray-600 font-semibold">
+            <th className="text-left py-3 px-4">Tên Khách Hàng</th>
+            <th className="text-left py-3 px-4">Email</th>
+            <th className="text-left py-3 px-4">Số Điện Thoại</th>
+            <th className="text-center py-3 px-4">Số Đơn Mua</th>
+            <th className="text-right py-3 px-4">Tổng Chi Tiêu</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((customer, idx) => (
+            <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
+              <td className="py-3 px-4 font-medium text-gray-900">{customer.name || "Ẩn danh"}</td>
+              <td className="py-3 px-4 text-gray-600">{customer.email}</td>
+              <td className="py-3 px-4 text-gray-600">{customer.phone || "Không có"}</td>
+              <td className="py-3 px-4 text-center text-gray-700">{customer.ordersCount}</td>
+              <td className="py-3 px-4 text-right font-semibold text-gray-900">
+                ₫ {customer.totalSpent.toLocaleString()}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+
+  return (
+    <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 relative">
+      {loading && (
+        <div className="absolute inset-0 bg-white/70 flex items-center justify-center text-gray-700 font-medium z-10">
+          Đang tải dữ liệu...
+        </div>
+      )}
+
+      <div className="max-w mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900">Thống Kê Bán Hàng</h1>
+            <p className="text-gray-600 mt-2">Theo dõi doanh thu và hiệu suất bán sản phẩm</p>
+          </div>
+
+          {/* Bộ lọc ngày bên phải */}
+          <div className="flex items-center gap-3 mt-4 md:mt-0">
+            <input
+              type="text"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              placeholder="dd/mm/yyyy"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400"
+            />
+            <input
+              type="text"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              placeholder="dd/mm/yyyy"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400"
+            />
+            <button
+              onClick={fetchStats}
+              className="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Lọc thống kê
+            </button>
+          </div>
+        </div>
+
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <StatCard
+            title="Tổng Doanh Thu"
+            value={`₫ ${(totalRevenue / 1000000).toFixed(2)}M`}
+            change="+12.5% so với kỳ trước"
+            bgColor="bg-blue-600"
+          />
+          <StatCard
+            title="Tổng Sản Phẩm Bán"
+            value={totalSales}
+            change="+8.3% so với kỳ trước"
+            bgColor="bg-emerald-600"
+          />
+          <StatCard
+            title="Tổng Khách Hàng"
+            value={totalCustomers}
+            change="+5.2% so với kỳ trước"
+            bgColor="bg-orange-600"
+          />
+          <StatCard
+            title="Giá Trung Bình"
+            value={`₫ ${avgOrderValue.toLocaleString()}`}
+            change="+3.1% so với kỳ trước"
+            bgColor="bg-pink-600"
+          />
+        </div>
+
+        {/* Charts Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          <div className="lg:col-span-2">
+            <BarChart data={booksData} maxValue={maxSales} color="bg-blue-500" />
+          </div>
+          <div>
+            <PieChart data={booksData} />
+          </div>
+        </div>
+
+        {/* Bảng khách hàng */}
+        <CustomerTable data={topCustomers} />
+      </div>
+    </main>
   )
 }
