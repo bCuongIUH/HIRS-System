@@ -96,7 +96,7 @@ export default function BookInventoryPage() {
   // ✅ Cột bảng
   const columns = [
     {
-      title: "Mã ISSN",
+      title: "Mã ISBN",
       dataIndex: "issn",
       key: "issn",
       width: 300,

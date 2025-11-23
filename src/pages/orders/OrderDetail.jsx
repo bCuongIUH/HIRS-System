@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams } from "react-router-dom"
-import { CheckCircle, AlertCircle, Phone, Mail, MapPin, DollarSign, Loader } from "lucide-react"
+import { CheckCircle, AlertCircle, MapPin, DollarSign, Loader } from "lucide-react"
 
 const OrderPage = () => {
   const { id } = useParams()
@@ -11,32 +11,30 @@ const OrderPage = () => {
   const [error, setError] = useState(null)
   const [showReturnModal, setShowReturnModal] = useState(false)
   const [returnAccepted, setReturnAccepted] = useState(false)
+  const [userNames, setUserNames] = useState({})
+  const userId = localStorage.getItem("userId")
 
-  useEffect(() => {
-    const fetchOrder = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const res = await fetch(`http://localhost:5000/api/orders/${id}`)
+  const fetchOrder = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await fetch(`http://localhost:5000/api/orders/${id}`)
 
-        if (!res.ok) throw new Error("Không thể tải thông tin đơn hàng")
+      if (!res.ok) throw new Error("Không thể tải thông tin đơn hàng")
 
-        const result = await res.json()
-        if (result.success && result.order) {
-          setOrder(result.order)
-        } else {
-          throw new Error(result.message || "Lỗi khi tải dữ liệu")
-        }
-      } catch (err) {
-        console.error("Error fetching order:", err)
-        setError(err.message)
-      } finally {
-        setLoading(false)
+      const result = await res.json()
+      if (result.success && result.order) {
+        setOrder(result.order)
+      } else {
+        throw new Error(result.message || "Lỗi khi tải dữ liệu")
       }
+    } catch (err) {
+      console.error("Error fetching order:", err)
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-
-    if (id) fetchOrder()
-  }, [id])
+  }
 
   const statusFlow = ["pending", "processing", "shipping", "delivered", "yeu_cau_hoan_tra"]
   const statusLabels = {
@@ -54,19 +52,65 @@ const OrderPage = () => {
     yeu_cau_hoan_tra: "bg-red-100 text-red-800",
   }
 
+  const fetchUserName = async (userId) => {
+    if (userNames[userId]) {
+      return userNames[userId]
+    }
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/${userId}`)
+      if (res.ok) {
+        const result = await res.json()
+        if (result.success && result.data) {
+          const userName = result.data.name || result.data.email || userId
+          setUserNames((prev) => ({ ...prev, [userId]: userName }))
+          return userName
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching user name:", err)
+    }
+    return userId
+  }
+
+console.log(userId);
+
+  useEffect(() => {
+    if (id) fetchOrder()
+  }, [id])
+
+  useEffect(() => {
+    if (order?.statusHistory && order.statusHistory.length > 0) {
+      order.statusHistory.forEach((history) => {
+        if (history.updatedBy && !userNames[history.updatedBy]) {
+          fetchUserName(history.updatedBy)
+        }
+      })
+    }
+  }, [order])
+
   const handleConfirmOrder = async () => {
-    if (!order) return
+    if (!order || !userId) return
+
     const currentIndex = statusFlow.indexOf(order.status)
     if (currentIndex < statusFlow.length - 1) {
       const newStatus = statusFlow[currentIndex + 1]
       try {
         const res = await fetch(`http://localhost:5000/api/orders/status/${id}`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: newStatus,
+            userId: userId, // Gửi userId từ localStorage
+          }),
         })
-        if (res.ok) setOrder({ ...order, status: newStatus })
-        else alert("Cập nhật trạng thái thất bại")
+
+        if (res.ok) {
+          setOrder({ ...order, status: newStatus })
+        } else {
+          alert("Cập nhật trạng thái thất bại")
+        }
       } catch (err) {
         console.error("Error updating order:", err)
         alert("Lỗi khi cập nhật trạng thái")
@@ -95,8 +139,7 @@ const OrderPage = () => {
     }
   }
 
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value)
+  const formatCurrency = (value) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value)
 
   const formatDate = (dateString) =>
     new Date(dateString).toLocaleDateString("vi-VN", {
@@ -156,9 +199,7 @@ const OrderPage = () => {
                     width:
                       statusFlow.indexOf(order.status) === 0
                         ? "0%"
-                        : `calc((100% - 48px) * ${statusFlow.indexOf(order.status)} / ${
-                            statusFlow.length - 1
-                          })`,
+                        : `calc((100% - 48px) * ${statusFlow.indexOf(order.status)} / ${statusFlow.length - 1})`,
                   }}
                 />
                 {statusFlow.map((status, index) => (
@@ -183,10 +224,7 @@ const OrderPage = () => {
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Sản phẩm</h2>
               <div className="space-y-4">
                 {order.items?.map((item) => (
-                  <div
-                    key={item._id}
-                    className="flex items-center justify-between border-b pb-4 last:border-b-0"
-                  >
+                  <div key={item._id} className="flex items-center justify-between border-b pb-4 last:border-b-0">
                     <div>
                       <h3 className="font-semibold text-slate-900">{item.title}</h3>
                       <p className="text-sm text-slate-600">Số lượng: {item.quantity}</p>
@@ -260,6 +298,22 @@ const OrderPage = () => {
               </div>
             </div>
 
+            {/* Lịch sử cập nhật trạng thái */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="font-semibold text-slate-900 mb-4">Lịch sử cập nhật trạng thái</h2>
+              <ul className="space-y-3">
+                {order?.statusHistory?.map((history, index) => (
+                  <li key={index} className="text-sm border-l-2 border-blue-600 pl-3">
+                    <p className="text-slate-700">
+                      <strong className="text-slate-900">{[history.updatedByName] || "Đang tải..."}</strong> đã cập
+                      nhật trạng thái thành <strong className="text-slate-900">{statusLabels[history.status]}</strong>{" "}
+                      vào <span className="text-slate-600">{formatDate(history.updatedAt)}</span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             {/* Nút hành động */}
             <div className="space-y-3">
               {order.status !== "delivered" && order.status !== "yeu_cau_hoan_tra" && (
@@ -284,9 +338,7 @@ const OrderPage = () => {
 
               {returnAccepted && (
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-sm font-semibold text-green-900">
-                    Yêu cầu hoàn trả đã được chấp nhận
-                  </p>
+                  <p className="text-sm font-semibold text-green-900">Yêu cầu hoàn trả đã được chấp nhận</p>
                 </div>
               )}
             </div>

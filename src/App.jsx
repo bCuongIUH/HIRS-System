@@ -28,6 +28,7 @@ import BookInventoryPage from "./pages/khohang/BookInventoryPage"
 import PromotionForm from "./pages/khuyenmai/PromotionForm"
 import WarehouseListPage from "./pages/khohang/WarehouseListPage"
 import OrderDetail from "./pages/orders/OrderDetail"
+import TransactionForm from "./pages/giaodich/TransactionForm"
 
 
 
@@ -43,7 +44,7 @@ const RequireAuth = ({ children }) => {
   }
 
   // Kiểm tra quyền admin (nếu cần)
-  if (userRole !== "admin" && userRole !== "hr") {
+  if (userRole !== "admin" && userRole !== "employee") {
     return <Navigate to="/unauthorized" replace />
   }
 
@@ -142,6 +143,7 @@ function App() {
 
              <Route path="promotionForm" element={<PromotionForm />} />
              <Route path="warehouseListPage" element={<WarehouseListPage />} />
+         <Route path="transactionForm" element={<TransactionForm />} />
         </Route>
 
         {/* Route không tồn tại */}

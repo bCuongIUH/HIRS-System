@@ -13,15 +13,13 @@ function Login() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Lấy đường dẫn chuyển hướng sau khi đăng nhập (nếu có)
   const from = location.state?.from?.pathname || "/dashboard"
 
-  // Kiểm tra nếu đã đăng nhập thì chuyển hướng
   useEffect(() => {
     const token = localStorage.getItem("token")
-    const userRole = localStorage.getItem("userRole")
+    const userRole = localStorage.getItem("userRole")?.toLowerCase().trim()
 
-    if (token && userRole === "admin") {
+    if (token && userRole && ["admin", "employee"].includes(userRole)) {
       navigate("/dashboard")
     }
   }, [navigate])
@@ -31,7 +29,6 @@ function Login() {
     setError("")
     setIsLoading(true)
 
-    // Validate form
     if (!email || !password) {
       setError("Vui lòng nhập đầy đủ thông tin")
       setIsLoading(false)
@@ -39,33 +36,29 @@ function Login() {
     }
 
     try {
-      // Gọi API đăng nhập
       const response = await loginUser(email, password)
 
-      console.log("Login response:", response) // Debug: Kiểm tra response
-
-      // Kiểm tra response và user object
       if (!response || !response.user) {
         throw new Error("Không nhận được thông tin người dùng từ server")
       }
 
-      // Kiểm tra role, chỉ cho phép admin truy cập
-    if (!response.user.role || !["admin", "employee"].includes(response.user.role)) {
-    setError("Bạn không có quyền truy cập vào hệ thống này")
-    setIsLoading(false)
-      return
-  }
+      const role = response.user.role?.toLowerCase().trim()
+      console.log("[v0] Normalized role:", role)
 
+      if (!role || !["admin", "employee"].includes(role)) {
+        setError("Bạn không có quyền truy cập vào hệ thống này")
+        setIsLoading(false)
+        return
+      }
 
-      // Lưu thông tin đăng nhập
       localStorage.setItem("token", response.token)
-      localStorage.setItem("userRole", response.user.role)
-      localStorage.setItem("userName", response.user.name || "Admin")
+      localStorage.setItem("userRole", role) // Save normalized role
+      localStorage.setItem("userName", response.user.name || response.user.employee?.fullName || "Admin")
       localStorage.setItem("userEmail", response.user.email || "")
       localStorage.setItem("userId", response.user.id || "")
       localStorage.setItem("isAuthenticated", "true")
 
-      // Chuyển hướng đến trang dashboard
+      console.log("[v0] Login successful, redirecting to dashboard")
       navigate("/dashboard", { replace: true })
     } catch (err) {
       console.error("Login error:", err)
@@ -87,9 +80,7 @@ function Login() {
         </div>
         <div className="p-12 text-white">
           <h1 className="text-4xl font-bold mb-6">Hệ thống Quản lý Book</h1>
-          <p className="text-lg opacity-80">
-            Giải pháp toàn diện giúp doanh nghiệp, quản lý bán sách hiệu quả.
-          </p>
+          <p className="text-lg opacity-80">Giải pháp toàn diện giúp doanh nghiệp, quản lý bán sách hiệu quả.</p>
         </div>
         <div className="p-12 text-blue-100 text-sm">© 2025 KT.BookStore.</div>
       </div>

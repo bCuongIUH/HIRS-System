@@ -160,7 +160,7 @@ const BookManagementPage = () => {
           <thead className="sticky top-0 bg-gray-100 z-10">
             <tr className="text-gray-700">
               <th className="p-3 text-left w-16">#</th>
-              <th className="p-3 text-left">ISSN</th>
+              <th className="p-3 text-left">ISBN</th>
               <th className="p-3 text-left">Tên Sách</th>
               <th className="p-3 text-left">Tác Giả</th>
               <th className="p-3 text-left">Thể Loại</th>

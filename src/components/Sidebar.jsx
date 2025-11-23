@@ -1,62 +1,93 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { NavLink } from "react-router-dom"
-import { BarChart3, Users, CalendarClock, Receipt, Calculator, Settings, Building, LogOut, Book, Warehouse, ListOrdered, User2, BarChart2, ShoppingBag, TicketCheckIcon } from "lucide-react"
+import {
+  BarChart3,
+  Users,
+  Building,
+  LogOut,
+  Book,
+  Warehouse,
+  User2,
+  BarChart2,
+  ShoppingBag,
+  TicketCheckIcon,
+} from "lucide-react"
 
 const sidebarLinks = [
   {
     title: "Dashboard",
     href: "/dashboard",
     icon: BarChart3,
+    roles: ["admin", "employee"], 
   },
   {
     title: "Nhân viên",
     href: "/employees",
     icon: User2,
+    roles: ["admin"], 
   },
-   {
+  {
     title: "Khách hàng",
     href: "/customers",
     icon: Users,
+    roles: ["admin", "employee"],
   },
   {
     title: "Sản phẩm",
     href: "/book-management",
     icon: Book,
+    roles: ["admin", "employee"],
   },
   {
     title: "Kho hàng",
     href: "/bookInventoryPage",
     icon: Warehouse,
+    roles: ["admin", "employee"],
   },
-     {
-    title: "Kiểm kho",
-    href: "/kiemkho",
-    icon: Warehouse,
-  },
+  // {
+  //   title: "Kiểm kho",
+  //   href: "/kiemkho",
+  //   icon: Warehouse,
+  //   roles: ["admin"],
+  // },
   {
     title: "Đơn hàng",
     href: "/orders",
     icon: ShoppingBag,
+    roles: ["admin", "employee"],
   },
     {
+    title: "Giao dịch",
+    href: "/transactionForm",
+    icon: Warehouse,
+    roles: ["admin", "employee"],
+  },
+  {
     title: "Khuyến Mãi",
     href: "/promotionForm",
     icon: TicketCheckIcon,
+    roles: ["admin"],
   },
   {
     title: "Thống Kê",
     href: "/thong-ke",
     icon: BarChart2,
+    roles: ["admin"],
   },
-  // {
-  //   title: "Cài đặt",
-  //   href: "/settings",
-  //   icon: Settings,
-  // },
 ]
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
+  const [userRole, setUserRole] = useState("")
+
+  useEffect(() => {
+    const role = localStorage.getItem("userRole")?.toLowerCase().trim() || ""
+    setUserRole(role)
+  }, [])
+
+  const visibleLinks = sidebarLinks.filter((link) => link.roles.includes(userRole))
+
   return (
     <>
       {/* Mobile sidebar */}
@@ -82,7 +113,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
           </div>
           <div className="flex-1 overflow-auto py-2">
             <nav className="grid items-start px-2 text-sm font-medium">
-              {sidebarLinks.map((link, index) => {
+              {visibleLinks.map((link, index) => {
                 const Icon = link.icon
                 return (
                   <NavLink

@@ -69,12 +69,14 @@ function DetailOrders() {
         return { label: "Chờ xử lý", className: "bg-yellow-100 text-yellow-800", icon: Clock }
       case "processing":
         return { label: "Đang xử lý", className: "bg-blue-100 text-blue-800", icon: Clock }
-      case "shipped":
-        return { label: "Đã gửi", className: "bg-indigo-100 text-indigo-800", icon: Package }
+      case "shipping":
+        return { label: "Vận chuyển", className: "bg-indigo-100 text-indigo-800", icon: Package }
       case "delivered":
         return { label: "Đã giao", className: "bg-green-100 text-green-800", icon: CheckCircle }
       case "cancelled":
         return { label: "Đã hủy", className: "bg-red-100 text-red-800", icon: XCircle }
+        case "shipped":
+        return { label: "Đã gửi", className: "bg-indigo-100 text-indigo-800", icon: Package }
       default:
         return { label: "Không rõ", className: "bg-gray-100 text-gray-800", icon: AlertTriangle }
     }

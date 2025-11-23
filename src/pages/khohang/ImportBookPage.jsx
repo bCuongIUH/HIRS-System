@@ -148,7 +148,7 @@ export default function ImportBooksPage() {
     if (!selectedBook) return message.warning("Vui lòng chọn sách từ danh sách gợi ý");
     if (!quantity || quantity <= 0) return message.warning("Vui lòng nhập số lượng hợp lệ");
     if (!importPrice || importPrice <= 0) return message.warning("Vui lòng nhập giá nhập hợp lệ");
-    if (!selectedBook.volume) return message.warning("Vui lòng chọn tập sách");
+  
 
     const newItem = {
       key: `${selectedBook._id}-${Date.now()}`,
@@ -207,7 +207,7 @@ export default function ImportBooksPage() {
   const totalProfit = importList.reduce((sum, item) => sum + item.profit, 0);
 
   const columns = [
-    { title: "Mã ISSN", dataIndex: "ISSN", key: "ISSN", render: (t) => <span className="font-mono">{t}</span> },
+    { title: "Mã ISBN", dataIndex: "ISSN", key: "ISSN", render: (t) => <span className="font-mono">{t}</span> },
     { title: "Tên Sách", dataIndex: "title", key: "title" },
     { title: "Tập", dataIndex: "volume", key: "volume", render: (v) => v || "Tập đơn" },
     {
