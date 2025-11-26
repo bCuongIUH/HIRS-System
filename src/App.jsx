@@ -29,6 +29,7 @@ import PromotionForm from "./pages/khuyenmai/PromotionForm"
 import WarehouseListPage from "./pages/khohang/WarehouseListPage"
 import OrderDetail from "./pages/orders/OrderDetail"
 import TransactionForm from "./pages/giaodich/TransactionForm"
+import ReturnDetailPage from "./pages/orders/ReturnDetailPage"
 
 
 
@@ -144,6 +145,7 @@ function App() {
              <Route path="promotionForm" element={<PromotionForm />} />
              <Route path="warehouseListPage" element={<WarehouseListPage />} />
          <Route path="transactionForm" element={<TransactionForm />} />
+             <Route path="/return-detail/:id" element={<ReturnDetailPage />} />
         </Route>
 
         {/* Route không tồn tại */}

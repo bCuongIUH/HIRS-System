@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom"
 import { CheckCircle, AlertCircle, MapPin, DollarSign, Loader, Printer } from "lucide-react"
 import html2canvas from "html2canvas"
 import { jsPDF } from "jspdf"
-
+import { useNavigate } from "react-router-dom"
 /**
  * OrderPage.jsx
  * - Full UI + logic
@@ -22,7 +22,7 @@ const OrderPage = () => {
   const [userNames, setUserNames] = useState({})
   const userId = localStorage.getItem("userId")
   const invoiceRef = useRef(null)
-
+const navigate = useNavigate()
   const statusFlow = ["pending", "processing", "shipping", "delivered", "yeu_cau_hoan_tra"]
   const statusLabels = {
     pending: "Chờ xác nhận",
