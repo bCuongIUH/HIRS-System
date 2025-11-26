@@ -1,8 +1,16 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useParams } from "react-router-dom"
-import { CheckCircle, AlertCircle, MapPin, DollarSign, Loader } from "lucide-react"
+import { CheckCircle, AlertCircle, MapPin, DollarSign, Loader, Printer } from "lucide-react"
+import html2canvas from "html2canvas"
+import { jsPDF } from "jspdf"
+
+/**
+ * OrderPage.jsx
+ * - Full UI + logic
+ * - Xuất hoá đơn PDF sử dụng html2canvas + jsPDF
+ */
 
 const OrderPage = () => {
   const { id } = useParams()
@@ -13,28 +21,7 @@ const OrderPage = () => {
   const [returnAccepted, setReturnAccepted] = useState(false)
   const [userNames, setUserNames] = useState({})
   const userId = localStorage.getItem("userId")
-
-  const fetchOrder = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-      const res = await fetch(`http://localhost:5000/api/orders/${id}`)
-
-      if (!res.ok) throw new Error("Không thể tải thông tin đơn hàng")
-
-      const result = await res.json()
-      if (result.success && result.order) {
-        setOrder(result.order)
-      } else {
-        throw new Error(result.message || "Lỗi khi tải dữ liệu")
-      }
-    } catch (err) {
-      console.error("Error fetching order:", err)
-      setError(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const invoiceRef = useRef(null)
 
   const statusFlow = ["pending", "processing", "shipping", "delivered", "yeu_cau_hoan_tra"]
   const statusLabels = {
@@ -52,69 +39,100 @@ const OrderPage = () => {
     yeu_cau_hoan_tra: "bg-red-100 text-red-800",
   }
 
-  const fetchUserName = async (userId) => {
-    if (userNames[userId]) {
-      return userNames[userId]
-    }
+  const fetchUserName = async (uId) => {
+    if (!uId) return "Không xác định"
+    if (userNames[uId]) return userNames[uId]
     try {
-      const res = await fetch(`http://localhost:5000/api/users/${userId}`)
+      const res = await fetch(`http://localhost:5000/api/users/${uId}`)
       if (res.ok) {
         const result = await res.json()
         if (result.success && result.data) {
-          const userName = result.data.name || result.data.email || userId
-          setUserNames((prev) => ({ ...prev, [userId]: userName }))
-          return userName
+          const name = result.data.name || result.data.email || uId
+          setUserNames((prev) => ({ ...prev, [uId]: name }))
+          return name
         }
       }
     } catch (err) {
-      console.error("Error fetching user name:", err)
+      console.error("fetchUserName error:", err)
     }
-    return userId
+    // fallback
+    setUserNames((prev) => ({ ...prev, [uId]: uId }))
+    return uId
   }
 
-console.log(userId);
+  const fetchOrder = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await fetch(`http://localhost:5000/api/orders/${id}`)
+      if (!res.ok) throw new Error("Không thể tải thông tin đơn hàng")
+      const result = await res.json()
+      if (result.success && result.order) {
+        setOrder(result.order)
+      } else {
+        throw new Error(result.message || "Lỗi khi tải dữ liệu")
+      }
+    } catch (err) {
+      console.error("Error fetching order:", err)
+      setError(err.message || "Lỗi khi tải đơn hàng")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
     if (id) fetchOrder()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
+  // Khi order về, prefetch tên những người liên quan
   useEffect(() => {
-    if (order?.statusHistory && order.statusHistory.length > 0) {
-      order.statusHistory.forEach((history) => {
-        if (history.updatedBy && !userNames[history.updatedBy]) {
-          fetchUserName(history.updatedBy)
-        }
+    if (!order) return
+  
+    if (order.createdBy) fetchUserName(order.createdBy)
+    if (order.statusHistory && Array.isArray(order.statusHistory)) {
+      order.statusHistory.forEach((h) => {
+        if (h.updatedBy) fetchUserName(h.updatedBy)
       })
     }
+    // nếu có returnRequest.requestedBy
+    if (order.returnRequest?.requestedBy) fetchUserName(order.returnRequest.requestedBy)
+   
   }, [order])
 
   const handleConfirmOrder = async () => {
-    if (!order || !userId) return
-
+    if (!order || !userId) {
+      alert("Không có đơn hàng hoặc chưa đăng nhập.")
+      return
+    }
     const currentIndex = statusFlow.indexOf(order.status)
+    if (currentIndex < 0) {
+      alert("Trạng thái đơn hàng không hợp lệ.")
+      return
+    }
     if (currentIndex < statusFlow.length - 1) {
       const newStatus = statusFlow[currentIndex + 1]
       try {
         const res = await fetch(`http://localhost:5000/api/orders/status/${id}`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            status: newStatus,
-            userId: userId, // Gửi userId từ localStorage
-          }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus, userId }),
         })
-
         if (res.ok) {
-          setOrder({ ...order, status: newStatus })
+          // cập nhật local 
+          setOrder((prev) => ({ ...prev, status: newStatus, statusHistory: [...(prev?.statusHistory || []), { status: newStatus, updatedBy: userId, updatedAt: new Date().toISOString() }] }))
+         
+          fetchUserName(userId)
         } else {
-          alert("Cập nhật trạng thái thất bại")
+          const data = await res.json().catch(() => ({}))
+          alert(data.message || "Cập nhật trạng thái thất bại")
         }
       } catch (err) {
         console.error("Error updating order:", err)
         alert("Lỗi khi cập nhật trạng thái")
       }
+    } else {
+      alert("Đơn hàng đã ở trạng thái cuối.")
     }
   }
 
@@ -124,14 +142,18 @@ console.log(userId);
       const res = await fetch(`http://localhost:5000/api/orders/${id}/return`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ returnStatus: "approved" }),
+        body: JSON.stringify({ returnStatus: "approved", handledBy: userId }),
       })
       if (res.ok) {
         setReturnAccepted(true)
         setShowReturnModal(false)
         alert("Đã chấp nhận yêu cầu hoàn trả. Khách hàng sẽ được hoàn tiền.")
+        // cập nhật local: đặt status về delivered? hoặc "return_approved" tuỳ backend
+        setOrder((prev) => ({ ...prev, status: "yeu_cau_hoan_tra", returnRequest: { ...prev?.returnRequest, status: "approved", handledBy: userId, handledAt: new Date().toISOString() } }))
+        fetchUserName(userId)
       } else {
-        alert("Chấp nhận hoàn trả thất bại")
+        const data = await res.json().catch(() => ({}))
+        alert(data.message || "Chấp nhận hoàn trả thất bại")
       }
     } catch (err) {
       console.error("Error accepting return:", err)
@@ -139,16 +161,76 @@ console.log(userId);
     }
   }
 
-  const formatCurrency = (value) => new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value)
+  const formatCurrency = (value) => {
+    if (isNaN(Number(value))) return "₫0"
+    return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(value))
+  }
 
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("vi-VN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
+  const formatDate = (dateString) => {
+    if (!dateString) return "-"
+    try {
+      return new Date(dateString).toLocaleDateString("vi-VN", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    } catch {
+      return dateString
+    }
+  }
+
+  // Xuất hoá đơn sang PDF
+  const exportInvoicePDF = async () => {
+    if (!invoiceRef.current) {
+      alert("Không tìm thấy nội dung hoá đơn.")
+      return
+    }
+    try {
+      // tăng scale để ảnh PDF nét hơn
+      const canvas = await html2canvas(invoiceRef.current, { scale: 2, useCORS: true })
+      const imgData = canvas.toDataURL("image/png")
+      const pdf = new jsPDF("p", "mm", "a4")
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      // tự động tính chiều cao ảnh theo tỉ lệ
+      const imgProps = pdf.getImageProperties(imgData)
+      const imgWidthMM = pageWidth - 16 // 8mm margin each side
+      const imgHeightMM = (imgProps.height * imgWidthMM) / imgProps.width
+      let position = 8
+      // nếu ảnh cao hơn 1 trang, chia trang
+      if (imgHeightMM <= pageHeight - 16) {
+        pdf.addImage(imgData, "PNG", 8, position, imgWidthMM, imgHeightMM)
+      } else {
+        // ghi theo nhiều trang
+        let remainingHeight = imgHeightMM
+        let tempCanvas = document.createElement("canvas")
+        const pxPerMM = canvas.width / imgWidthMM // approximate px per mm
+        const sliceHeightPx = Math.floor((pageHeight - 16) * pxPerMM)
+        let y = 0
+        while (remainingHeight > 0) {
+          const sliceCanvas = document.createElement("canvas")
+          sliceCanvas.width = canvas.width
+          sliceCanvas.height = Math.min(sliceHeightPx, canvas.height - y)
+          const ctx = sliceCanvas.getContext("2d")
+          ctx.drawImage(canvas, 0, y, canvas.width, sliceCanvas.height, 0, 0, canvas.width, sliceCanvas.height)
+          const sliceData = sliceCanvas.toDataURL("image/png")
+          const sliceImgProps = { width: sliceCanvas.width, height: sliceCanvas.height }
+          const sliceImgHeightMM = (sliceImgProps.height * imgWidthMM) / sliceImgProps.width
+          if (y > 0) pdf.addPage()
+          pdf.addImage(sliceData, "PNG", 8, 8, imgWidthMM, sliceImgHeightMM)
+          y += sliceHeightPx
+          remainingHeight -= sliceImgHeightMM
+        }
+      }
+      const fileName = `Invoice-${order?.orderCode || id}.pdf`
+      pdf.save(fileName)
+    } catch (err) {
+      console.error("Error exporting PDF:", err)
+      alert("Không thể xuất hoá đơn. Vui lòng thử lại.")
+    }
+  }
 
   if (loading)
     return (
@@ -173,58 +255,85 @@ console.log(userId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <div className="max-w mx-auto p-6">
+      <div className="max-w mx-auto px-4">
         {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Chi tiết đơn hàng</h1>
-            <p className="text-slate-600 mt-1">Mã đơn: {order.orderCode}</p>
-          </div>
-          <div className={`px-4 py-2 rounded-lg font-semibold ${statusColors[order.status]}`}>
-            {statusLabels[order.status]}
-          </div>
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Chi tiết đơn hàng</h1>
+              <p className="text-slate-600 mt-1">Mã đơn: {order.orderCode}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              {/* Hiển thị trạng thái */}
+              <div className={`px-4 py-2 rounded-lg font-semibold ${statusColors[order.status]}`}>
+                {statusLabels[order.status]}
+              </div>
+
+              {/* Nút xem chi tiết hoàn trả, chỉ khi yêu cầu hoàn trả */}
+              {order.status === "yeu_cau_hoan_tra" && (
+                <button
+                  onClick={() => navigate(`/return-detail/${order._id}`)}
+                  className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                >
+                  Xem chi tiết hoàn trả
+                </button>
+              )}
+
+              {/* Xuất hoá đơn PDF, chỉ khi đã giao */}
+              {order.status === "delivered" && (
+                <button
+                  onClick={exportInvoicePDF}
+                  className="flex items-center gap-2 bg-white border hover:shadow-md px-4 py-2 rounded-md"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span className="text-sm font-medium">Xuất hoá đơn (PDF)</span>
+                </button>
+              )}
+            </div>
+
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Nội dung chính */}
+          {/* Left/Main */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Thanh tiến trình trạng thái */}
+            {/* Progress */}
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-slate-900 mb-8">Trạng thái đơn hàng</h2>
-              <div className="relative flex justify-between">
-                <div className="absolute top-6 left-6 right-6 h-1 bg-slate-200 z-0" />
+              <h2 className="text-lg font-semibold text-slate-900 mb-6">Trạng thái đơn hàng</h2>
+              <div className="relative">
+                <div className="absolute top-8 left-8 right-8 h-1 bg-slate-200 z-0" />
                 <div
-                  className="absolute top-6 left-6 h-1 bg-blue-600 z-0 transition-all duration-300"
+                  className="absolute top-8 left-8 h-1 bg-blue-600 z-0 transition-all duration-300"
                   style={{
                     width:
                       statusFlow.indexOf(order.status) === 0
                         ? "0%"
-                        : `calc((100% - 48px) * ${statusFlow.indexOf(order.status)} / ${statusFlow.length - 1})`,
+                        : `calc((100% - 64px) * ${statusFlow.indexOf(order.status)} / ${statusFlow.length - 1})`,
                   }}
                 />
-                {statusFlow.map((status, index) => (
-                  <div key={status} className="flex flex-col items-center relative z-10">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold mb-3 border-4 transition-all ${
-                        statusFlow.indexOf(order.status) >= index
-                          ? "bg-blue-600 text-white border-blue-600"
-                          : "bg-white text-slate-600 border-slate-200"
-                      }`}
-                    >
-                      {index + 1}
+                <div className="flex justify-between relative z-10">
+                  {statusFlow.map((status, index) => (
+                    <div key={status} className="flex flex-col items-center">
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center font-semibold mb-2 border-4 transition-all ${
+                          statusFlow.indexOf(order.status) >= index
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-white text-slate-600 border-slate-200"
+                        }`}
+                      >
+                        {index + 1}
+                      </div>
+                      <p className="text-sm text-center text-slate-600 w-24">{statusLabels[status]}</p>
                     </div>
-                    <p className="text-sm text-center text-slate-600 w-20">{statusLabels[status]}</p>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Danh sách sản phẩm */}
+            {/* Products */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-slate-900 mb-4">Sản phẩm</h2>
               <div className="space-y-4">
                 {order.items?.map((item) => (
-                  <div key={item._id} className="flex items-center justify-between border-b pb-4 last:border-b-0">
+                  <div key={item._id || item.productId || Math.random()} className="flex items-center justify-between border-b pb-4 last:border-b-0">
                     <div>
                       <h3 className="font-semibold text-slate-900">{item.title}</h3>
                       <p className="text-sm text-slate-600">Số lượng: {item.quantity}</p>
@@ -238,7 +347,7 @@ console.log(userId);
               </div>
             </div>
 
-            {/* Địa chỉ giao hàng */}
+            {/* Shipping */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-blue-600" /> Địa chỉ giao hàng
@@ -249,8 +358,8 @@ console.log(userId);
                 <p className="text-sm text-slate-600">Số điện thoại: {order.shippingAddress?.phone}</p>
                 <p className="text-sm text-slate-600">Email: {order.shippingAddress?.email}</p>
                 <p className="text-sm text-slate-600">
-                  Địa chỉ: {order.shippingAddress?.address}, {order.shippingAddress?.ward},{" "}
-                  {order.shippingAddress?.district}, {order.shippingAddress?.city}
+                  Địa chỉ: {order.shippingAddress?.address}, {order.shippingAddress?.ward}, {order.shippingAddress?.district},{" "}
+                  {order.shippingAddress?.city}
                 </p>
               </div>
             </div>
@@ -258,12 +367,41 @@ console.log(userId);
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Tóm tắt đơn hàng */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-blue-600" /> Tóm tắt đơn hàng
-              </h2>
-              <div className="space-y-3">
+            {/* Invoice summary (this will be captured to PDF) */}
+            <div className="bg-white rounded-lg shadow-sm p-6" ref={invoiceRef}>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">Hoá đơn</h2>
+                  <p className="text-sm text-slate-600">Mã: {order.orderCode}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-slate-600">Ngày: {formatDate(order.createdAt)}</p>
+                  <p className="text-sm text-slate-600">Người mua: {order.shippingAddress?.fullName}</p>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-slate-600">
+                      <th>Sản phẩm</th>
+                      <th className="text-right">Số lượng</th>
+                      <th className="text-right">Đơn giá</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {order.items?.map((it) => (
+                      <tr key={it._id || it.productId || Math.random()} className="border-t">
+                        <td className="py-2">{it.title}</td>
+                        <td className="py-2 text-right">{it.quantity}</td>
+                        <td className="py-2 text-right">{formatCurrency(it.price)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="border-t pt-3 text-sm">
                 <div className="flex justify-between text-slate-600">
                   <span>Tạm tính</span>
                   <span>{formatCurrency(order.subtotal)}</span>
@@ -276,14 +414,14 @@ console.log(userId);
                   <span>Thuế</span>
                   <span>{formatCurrency(order.tax)}</span>
                 </div>
-                <div className="border-t pt-3 flex justify-between font-bold text-lg text-slate-900">
+                <div className="flex justify-between font-bold text-lg mt-2">
                   <span>Tổng cộng</span>
                   <span className="text-blue-600">{formatCurrency(order.total)}</span>
                 </div>
               </div>
             </div>
 
-            {/* Thông tin đơn hàng */}
+            {/* Order info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="font-semibold text-slate-900 mb-3">Thông tin đơn hàng</h3>
               <div className="space-y-2 text-sm">
@@ -295,10 +433,14 @@ console.log(userId);
                   <span className="text-slate-600">Ngày tạo: </span>
                   <span className="font-semibold">{formatDate(order.createdAt)}</span>
                 </p>
+                <p>
+                  <span className="text-slate-600">Người đặt hàng: </span>
+                  <span className="font-semibold">{[order.shippingAddress.fullName] || "Đang tải..."}</span>
+                </p>
               </div>
             </div>
 
-            {/* Lịch sử cập nhật trạng thái */}
+            {/* Status history */}
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h2 className="font-semibold text-slate-900 mb-4">Lịch sử cập nhật trạng thái</h2>
               <ul className="space-y-3">
@@ -306,15 +448,15 @@ console.log(userId);
                   <li key={index} className="text-sm border-l-2 border-blue-600 pl-3">
                     <p className="text-slate-700">
                       <strong className="text-slate-900">{[history.updatedByName] || "Đang tải..."}</strong> đã cập
-                      nhật trạng thái thành <strong className="text-slate-900">{statusLabels[history.status]}</strong>{" "}
-                      vào <span className="text-slate-600">{formatDate(history.updatedAt)}</span>
+                      nhật trạng thái thành <strong className="text-slate-900">{statusLabels[history.status]}</strong> vào{" "}
+                      <span className="text-slate-600">{formatDate(history.updatedAt)}</span>
                     </p>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Nút hành động */}
+            {/* Actions */}
             <div className="space-y-3">
               {order.status !== "delivered" && order.status !== "yeu_cau_hoan_tra" && (
                 <button
@@ -357,6 +499,11 @@ console.log(userId);
             </div>
             <div className="mb-4 text-sm text-slate-600">
               <p>Ngày yêu cầu: {formatDate(order.returnRequest.requestedAt)}</p>
+              {order.returnRequest.requestedBy && (
+                <p>
+                  Người yêu cầu: <strong>{userNames[order.returnRequest.requestedBy] || order.returnRequest.requestedBy}</strong>
+                </p>
+              )}
             </div>
             <div className="flex gap-3">
               <button

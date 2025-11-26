@@ -75,8 +75,10 @@ function DetailOrders() {
         return { label: "Đã giao", className: "bg-green-100 text-green-800", icon: CheckCircle }
       case "cancelled":
         return { label: "Đã hủy", className: "bg-red-100 text-red-800", icon: XCircle }
-        case "shipped":
+      case "shipped":
         return { label: "Đã gửi", className: "bg-indigo-100 text-indigo-800", icon: Package }
+      case "yeu_cau_hoan_tra":
+        return { label: "Yêu cầu hoàn trả", className: "bg-red-100 text-red-800", icon: Package }
       default:
         return { label: "Không rõ", className: "bg-gray-100 text-gray-800", icon: AlertTriangle }
     }
