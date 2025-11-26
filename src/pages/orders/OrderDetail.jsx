@@ -6,6 +6,8 @@ import { CheckCircle, AlertCircle, MapPin, DollarSign, Loader, Printer } from "l
 import html2canvas from "html2canvas"
 import { jsPDF } from "jspdf"
 import { useNavigate } from "react-router-dom"
+import { notification } from "antd";
+
 /**
  * OrderPage.jsx
  * - Full UI + logic
@@ -100,41 +102,72 @@ const navigate = useNavigate()
    
   }, [order])
 
-  const handleConfirmOrder = async () => {
-    if (!order || !userId) {
-      alert("Không có đơn hàng hoặc chưa đăng nhập.")
-      return
-    }
-    const currentIndex = statusFlow.indexOf(order.status)
-    if (currentIndex < 0) {
-      alert("Trạng thái đơn hàng không hợp lệ.")
-      return
-    }
-    if (currentIndex < statusFlow.length - 1) {
-      const newStatus = statusFlow[currentIndex + 1]
-      try {
-        const res = await fetch(`http://localhost:5000/api/orders/status/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: newStatus, userId }),
-        })
-        if (res.ok) {
-          // cập nhật local 
-          setOrder((prev) => ({ ...prev, status: newStatus, statusHistory: [...(prev?.statusHistory || []), { status: newStatus, updatedBy: userId, updatedAt: new Date().toISOString() }] }))
-         
-          fetchUserName(userId)
-        } else {
-          const data = await res.json().catch(() => ({}))
-          alert(data.message || "Cập nhật trạng thái thất bại")
-        }
-      } catch (err) {
-        console.error("Error updating order:", err)
-        alert("Lỗi khi cập nhật trạng thái")
-      }
-    } else {
-      alert("Đơn hàng đã ở trạng thái cuối.")
-    }
+const handleConfirmOrder = async () => {
+  if (!order || !userId) {
+    notification.error({
+      message: "Lỗi",
+      description: "Không có đơn hàng hoặc chưa đăng nhập.",
+    });
+    return;
   }
+
+  const currentIndex = statusFlow.indexOf(order.status);
+  if (currentIndex < 0) {
+    notification.error({
+      message: "Lỗi",
+      description: "Trạng thái đơn hàng không hợp lệ.",
+    });
+    return;
+  }
+
+  if (currentIndex < statusFlow.length - 1) {
+    const newStatus = statusFlow[currentIndex + 1];
+    try {
+      const res = await fetch(`http://localhost:5000/api/orders/status/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus, userId }),
+      });
+
+      if (res.ok) {
+        // cập nhật local 
+        setOrder((prev) => ({
+          ...prev,
+          status: newStatus,
+          statusHistory: [
+            ...(prev?.statusHistory || []),
+            { status: newStatus, updatedBy: userId, updatedAt: new Date().toISOString() },
+          ],
+        }));
+
+        fetchUserName(userId);
+
+        notification.success({
+          message: "Thành công",
+          description: `Đơn hàng đã được cập nhật trạng thái thành: ${statusLabels[newStatus]}`,
+        });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        notification.error({
+          message: "Cập nhật thất bại",
+          description: data.message || "Cập nhật trạng thái thất bại.",
+        });
+      }
+    } catch (err) {
+      console.error("Error updating order:", err);
+      notification.error({
+        message: "Lỗi",
+        description: "Lỗi khi cập nhật trạng thái.",
+      });
+    }
+  } else {
+    notification.warning({
+      message: "Lưu ý",
+      description: "Đơn hàng đã ở trạng thái cuối.",
+    });
+  }
+};
+
 
   const handleAcceptReturn = async () => {
     if (!order) return

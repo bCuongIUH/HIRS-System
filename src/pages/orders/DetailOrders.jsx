@@ -1,9 +1,7 @@
-"use client"
-
 import { useState, useEffect } from "react"
+import { notification } from "antd"; // import notification từ antd
 import { Search, MoreHorizontal, Package, Clock, CheckCircle, XCircle, AlertTriangle, Filter } from "lucide-react"
 import { useNavigate } from "react-router-dom"
-
 
 function DetailOrders() {
   const [orders, setOrders] = useState([])
@@ -74,20 +72,33 @@ function DetailOrders() {
       case "delivered":
         return { label: "Đã giao", className: "bg-green-100 text-green-800", icon: CheckCircle }
       case "cancelled":
-        return { label: "Đã hủy", className: "bg-red-100 text-red-800", icon: XCircle }
+        return { label: "Từ chối trả hàng", className: "bg-red-100 text-red-800", icon: XCircle }
       case "shipped":
         return { label: "Đã gửi", className: "bg-indigo-100 text-indigo-800", icon: Package }
       case "yeu_cau_hoan_tra":
         return { label: "Yêu cầu hoàn trả", className: "bg-red-100 text-red-800", icon: Package }
+      case "paid":
+        return { label: "Đã trả hàng", className: "bg-yellow-100 text-red-800", icon: CheckCircle }
       default:
         return { label: "Không rõ", className: "bg-gray-100 text-gray-800", icon: AlertTriangle }
     }
   }
 
-  const getReturnStatusInfo = (returnRequest) => {
-    if (!returnRequest) return { label: "Không", className: "bg-gray-100 text-gray-800" }
-    return { label: "Yêu cầu", className: "bg-yellow-100 text-yellow-800" }
-  }
+  const getReturnStatusInfo = (order) => {
+    if (!order) return { label: "Không", className: "bg-gray-100 text-gray-800" };
+
+    // Nếu status là các trạng thái liên quan hoàn trả
+    if (["yeu_cau_hoan_tra", "paid", "cancelled"].includes(order.status)) {
+      return { label: "Có", className: "bg-green-100 text-green-800" };
+    }
+
+    // Nếu có returnRequest nhưng chưa chấp nhận
+    if (order.returnRequest) {
+      return { label: "Yêu cầu", className: "bg-yellow-100 text-yellow-800" };
+    }
+
+    return { label: "Không", className: "bg-gray-100 text-gray-800" };
+  };
 
   const canReturnOrder = (orderDate) => {
     const now = new Date()
@@ -101,14 +112,23 @@ function DetailOrders() {
   }
 
   const handleReturnRequest = (orderId, action) => {
-    alert(`Đơn hàng ${orderId} - ${action === "approve" ? "Chấp nhận" : "Từ chối"} hoàn trả`)
-    setActiveDropdown(null)
+    const message = action === "approve" ? "Chấp nhận hoàn trả" : "Từ chối hoàn trả";
+
+    notification.open({
+      message: `Đơn hàng ${orderId} - ${message}`,
+      description: `Bạn đã ${message.toLowerCase()} đơn hàng ${orderId}.`,
+      onClick: () => {
+        console.log("Thông báo được nhấn!");
+      },
+      duration: 3, // Thời gian hiển thị thông báo (giây)
+    });
+
+    setActiveDropdown(null);
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-10xl mx-auto space-y-6">
-
         {/* Tiêu đề */}
         <div className="bg-white rounded-lg shadow-sm p-6 border">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Quản lý Đơn hàng</h1>
@@ -224,8 +244,8 @@ function DetailOrders() {
                         </td>
 
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${returnStatusInfo.className}`}>
-                            {returnStatusInfo.label}
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${getReturnStatusInfo(order).className}`}>
+                            {getReturnStatusInfo(order).label}
                           </span>
                         </td>
 
@@ -243,7 +263,7 @@ function DetailOrders() {
 
                              {activeDropdown === order._id && (
                             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                              <button
+                              {/* <button
                                 onClick={() => handleReturnRequest(order._id, "approve")}
                                 className="block w-full text-left px-4 py-2 text-sm text-green-700 hover:bg-green-50"
                               >
@@ -254,7 +274,7 @@ function DetailOrders() {
                                 className="block w-full text-left px-4 py-2 text-sm text-red-700 hover:bg-red-50"
                               >
                                 ✗ Từ chối hoàn trả
-                              </button>
+                              </button> */}
                               </div>
                             )}
                           </div>
@@ -273,4 +293,4 @@ function DetailOrders() {
   )
 }
 
-export default DetailOrders
+export default DetailOrders;
