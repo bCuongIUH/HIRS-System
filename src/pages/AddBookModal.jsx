@@ -148,7 +148,7 @@ const handleSubmit = async (e) => {
               name="ISSN"
               value={formData.ISSN}
               onChange={handleInputChange}
-              placeholder="ISSN *"
+              placeholder="ISBN *"
               className="border p-2 rounded-lg"
               required
             />

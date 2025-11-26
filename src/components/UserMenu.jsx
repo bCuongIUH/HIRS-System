@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useRef, useEffect } from "react"
 import { LogOut, Settings, User } from "lucide-react"
 import { logoutUser } from "../utils/auth"
@@ -52,11 +50,17 @@ function UserMenu() {
               <p className="text-xs text-gray-500">{userEmail}</p>
             </div>
             <div className="h-px bg-gray-200 my-1"></div>
-            <button className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100">
+            <button
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+              onClick={() => navigate("/profile")}
+            >
               <User className="h-4 w-4" />
               <span>Hồ sơ</span>
             </button>
-            <button className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100">
+            <button
+              className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-gray-100"
+              onClick={() => navigate("/settings")}
+            >
               <Settings className="h-4 w-4" />
               <span>Cài đặt</span>
             </button>

@@ -8,7 +8,7 @@ import Employees from "./pages/Employees"
 // import Payroll from "./pages/Payroll"
 import PayrollCalculate from "./pages/PayrollCalculate"
 import Departments from "./pages/Departments"
-import Settings from "./pages/Settings"
+// import Settings from "./pages/Settings"
 import Login from "./pages/Login"
 // import EmployeeLogin from "./pages/EmployeeLogin"
 // import EmployeeDashboard from "./pages/EmployeeDashboard"
@@ -30,6 +30,8 @@ import WarehouseListPage from "./pages/khohang/WarehouseListPage"
 import OrderDetail from "./pages/orders/OrderDetail"
 import TransactionForm from "./pages/giaodich/TransactionForm"
 import ReturnDetailPage from "./pages/orders/ReturnDetailPage"
+import Profile from "./components/profile/Profile"
+import Settings from "./components/profile/Settings"
 
 
 
@@ -133,7 +135,7 @@ function App() {
           <Route path="/orders/:id" element={<OrderDetail />} />
 
           <Route path="departments" element={<Departments />} />
-          <Route path="settings" element={<Settings />} />
+          <Route path="settingss" element={<Settings />} />
           
           <Route path="thong-ke" element={<RevenueDashboard />} />
 
@@ -146,6 +148,8 @@ function App() {
              <Route path="warehouseListPage" element={<WarehouseListPage />} />
          <Route path="transactionForm" element={<TransactionForm />} />
              <Route path="/return-detail/:id" element={<ReturnDetailPage />} />
+               <Route path="/profile" element={<Profile />} />
+        {/* <Route path="/settings" element={<Settings />} /> */}
         </Route>
 
         {/* Route không tồn tại */}

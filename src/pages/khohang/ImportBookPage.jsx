@@ -139,7 +139,7 @@ export default function ImportBooksPage() {
   const handleSelect = (_, option) => {
     const book = option.book;
     setSelectedBook(book);
-    setSearchValue(`${book.ISSN} - ${book.title} - ${book.volume || "Tập đơn"}`);
+    setSearchValue(` ${book.title} - Tập ${book.volume || "đơn"}`);
     setImportPrice("");
   };
 
@@ -257,7 +257,7 @@ export default function ImportBooksPage() {
             type="text"
             icon={<ArrowLeftOutlined />}
             onClick={() => navigate("/bookInventoryPage")}
-            className="text-blue-600"
+            className="text-600"
           >
             Quay lại kho hàng
           </Button>
@@ -272,7 +272,7 @@ export default function ImportBooksPage() {
               options={getSearchOptions(searchValue)}
               onSelect={handleSelect}
               onChange={setSearchValue}
-              placeholder="Nhập mã ISSN hoặc tên sách..."
+              placeholder="Nhập mã ISBN hoặc tên sách..."
               className="w-full"
             />
             {selectedBook && (

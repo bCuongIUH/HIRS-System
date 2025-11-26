@@ -131,7 +131,7 @@ const EditBookModal = ({ isOpen, onClose, book, onBookUpdated }) => {
         </label>
 
         <label>
-          ISSN:
+          ISBN:
           <Input
             name="ISSN"
             value={formData.ISSN}
