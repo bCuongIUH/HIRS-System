@@ -32,6 +32,8 @@ const navigate = useNavigate()
     shipping: "Vận chuyển",
     delivered: "Đã giao",
     yeu_cau_hoan_tra: "Yêu cầu hoàn trả",
+    tuchoi : "Huỷ đơn",
+     paid : "Đơn hàng đã hoàn trả"
   }
   const statusColors = {
     pending: "bg-yellow-100 text-yellow-800",
@@ -39,6 +41,8 @@ const navigate = useNavigate()
     shipping: "bg-purple-100 text-purple-800",
     delivered: "bg-green-100 text-green-800",
     yeu_cau_hoan_tra: "bg-red-100 text-red-800",
+     tuchoi : "bg-red-100 text-red-800",
+      paid : "bg-yellow-100 text-yellow-800"
   }
 
   const fetchUserName = async (uId) => {
@@ -264,6 +268,48 @@ const handleConfirmOrder = async () => {
       alert("Không thể xuất hoá đơn. Vui lòng thử lại.")
     }
   }
+  //từ chối
+const handleRejectOrder = async () => {
+  if (!order || !userId) return;
+
+  try {
+    const res = await fetch(`http://localhost:5000/api/orders/status/rejectOrder/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "tuchoi", userId }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok) {
+      setOrder((prev) => ({
+        ...prev,
+        status: "tuchoi",
+        statusHistory: [
+          ...(prev?.statusHistory || []),
+          { status: "tuchoi", updatedBy: userId, updatedAt: new Date().toISOString() },
+        ],
+      }));
+
+      notification.success({
+        message: "Đã từ chối đơn hàng",
+        description: "Đơn hàng đã bị từ chối và sẽ không được xử lý.",
+      });
+
+    } else {
+      notification.error({
+        message: "Lỗi",
+        description: data.message || "Không thể từ chối đơn hàng.",
+      });
+    }
+  } catch (err) {
+    console.error("Error rejecting order:", err);
+    notification.error({
+      message: "Lỗi",
+      description: "Không thể từ chối đơn hàng.",
+    });
+  }
+};
 
   if (loading)
     return (
@@ -491,13 +537,21 @@ const handleConfirmOrder = async () => {
 
             {/* Actions */}
             <div className="space-y-3">
-              {order.status !== "delivered" && order.status !== "yeu_cau_hoan_tra" && (
+              {order.status !== "delivered" && order.status !== "yeu_cau_hoan_tra" && order.status !== "tuchoi" && (
                 <button
                   onClick={handleConfirmOrder}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   <CheckCircle className="w-5 h-5" />
                   Xác nhận bước tiếp theo
+                </button>
+              )}
+              {order.status === "pending" && (
+                <button
+                  onClick={handleRejectOrder}
+                    className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  Từ chối đơn hàng
                 </button>
               )}
 

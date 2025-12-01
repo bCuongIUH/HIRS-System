@@ -79,6 +79,8 @@ function DetailOrders() {
         return { label: "Yêu cầu hoàn trả", className: "bg-red-100 text-red-800", icon: Package }
       case "paid":
         return { label: "Đã trả hàng", className: "bg-yellow-100 text-red-800", icon: CheckCircle }
+      case "tuchoi":
+        return { label: "Huỷ đơn", className: "bg-red-100 text-red-800", icon: XCircle }
       default:
         return { label: "Không rõ", className: "bg-gray-100 text-gray-800", icon: AlertTriangle }
     }

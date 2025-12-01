@@ -17,6 +17,12 @@ const stepList = [
   { key: "rejected", label: "Từ chối" },
 ];
 
+// Map trạng thái key sang label tiếng Việt
+const statusVNMap = stepList.reduce((acc, item) => {
+  acc[item.key] = item.label;
+  return acc;
+}, {});
+
 const ReturnDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -171,6 +177,7 @@ const ReturnDetailPage = () => {
                 />
               ))}
             </Steps>
+
             <p><span className="font-semibold">Ngày yêu cầu: </span>{formatDate(order.createdAt)}</p>
             <p><span className="font-semibold">Lý do: </span>{order.reason}</p>
             <p><span className="font-semibold">Mô tả chi tiết: </span>{order.description}</p>
@@ -198,9 +205,11 @@ const ReturnDetailPage = () => {
                 <Button type="primary" onClick={handleAccept} loading={updating}>
                   {order.status === "accepted" ? "Chấp nhận hoàn trả" : "Tiếp nhận yêu cầu"}
                 </Button>
-                <Button danger onClick={handleReject} loading={updating}>
-                  Từ chối
-                </Button>
+                {order.status === "pending" && (
+                  <Button danger onClick={handleReject} loading={updating}>
+                    Từ chối
+                  </Button>
+                )}
               </div>
             )}
           </Card>
@@ -238,8 +247,8 @@ const ReturnDetailPage = () => {
           <Card title="Nhân viên tiếp nhận">
             <Timeline>
               {order.statusHistory?.map((item, idx) => (
-                <Timeline.Item key={idx} color="green" dot={<CheckCircleOutlined />}>
-                  {item.updatedByName} - {item.status} ({formatDate(item.updatedAt)})
+                <Timeline.Item key={idx} color={item.status === "rejected" ? "red" : "green"} dot={item.status === "rejected" ? <CloseCircleOutlined /> : <CheckCircleOutlined />}>
+                  {item.updatedByName} - {statusVNMap[item.status] || item.status} ({formatDate(item.updatedAt)})
                 </Timeline.Item>
               ))}
             </Timeline>
