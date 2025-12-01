@@ -736,7 +736,7 @@ export default function PromotionForm() {
                     onClick={() => message.info("Chức năng chỉnh sửa chưa implement")}
                     className="flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-sm"
                   >
-                    <EditIcon /> Chỉnh sửa
+                    {/* <EditIcon /> Chỉnh sửa */}
                   </button>
                   <button
                     onClick={() => deletePromotion(promo._id || promo.id)}

@@ -416,10 +416,12 @@ const handleRejectOrder = async () => {
                     <div>
                       <h3 className="font-semibold text-slate-900">{item.title}</h3>
                       <p className="text-sm text-slate-600">Số lượng: {item.quantity}</p>
+                      <p className="text-sm text-slate-600 italic">Ghi Chú: {order.shippingAddress?.notes}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-semibold text-slate-900">{formatCurrency(item.total)}</p>
                       <p className="text-sm text-slate-600">{formatCurrency(item.price)}/cái</p>
+                      
                     </div>
                   </div>
                 ))}
