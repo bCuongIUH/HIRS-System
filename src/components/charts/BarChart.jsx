@@ -20,7 +20,7 @@ export function BarChart({ data }) {
           labels: data.map(item => item.name),
           datasets: [
             {
-              label: 'Số lượng nhân viên',
+              label: 'Số lượng sách',
               data: data.map(item => item.total),
               backgroundColor: '#3b82f6',
               borderRadius: 4,
@@ -37,7 +37,7 @@ export function BarChart({ data }) {
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return `${context.parsed.y} nhân viên`;
+                  return `${context.parsed.y} Sách`;
                 }
               }
             }

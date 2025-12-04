@@ -343,7 +343,7 @@ const exportToExcel = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatCard
             title="Tổng Doanh Thu"
-            value={`₫ ${(totalRevenue / 1000000).toFixed(2)}M`}
+           value={`₫ ${totalRevenue.toLocaleString()}`}
             change="+12.5% so với kỳ trước"
             bgColor="bg-blue-600"
           />
