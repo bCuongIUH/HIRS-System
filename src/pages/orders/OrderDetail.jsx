@@ -23,8 +23,10 @@ const OrderPage = () => {
   const [returnAccepted, setReturnAccepted] = useState(false)
   const [userNames, setUserNames] = useState({})
   const userId = localStorage.getItem("userId")
+  const userNametoken = localStorage.getItem("userName")
   const invoiceRef = useRef(null)
-const navigate = useNavigate()
+  const [employeeName, setEmployeeName] = useState("")
+  const navigate = useNavigate()
   const statusFlow = ["pending", "processing", "shipping", "delivered", "yeu_cau_hoan_tra"]
   const statusLabels = {
     pending: "Chờ xác nhận",
@@ -65,6 +67,26 @@ const navigate = useNavigate()
     setUserNames((prev) => ({ ...prev, [uId]: uId }))
     return uId
   }
+// Fetch employee name based on the userNametoken
+const fetchEmployeeName = async () => {
+  try {
+    if (!userNametoken) return
+    const res = await fetch(`http://localhost:5000/api/users/${userNametoken}`)
+    if (res.ok) {
+      const result = await res.json()
+      if (result.success && result.data) {
+        setEmployeeName(result.data.name || "Không xác định")
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching employee name:", err)
+  }
+}
+
+useEffect(() => {
+  fetchEmployeeName()
+}, [userNametoken])
+console.log("12",userNametoken);
 
   const fetchOrder = async () => {
     try {
@@ -263,6 +285,7 @@ const handleConfirmOrder = async () => {
           remainingHeight -= sliceImgHeightMM
         }
       }
+      //  pdf.text(`Nhân viên xuất hoá đơn: ${userNametoken || "Không xác định"}`, 8, pageHeight - 10)
       const fileName = `Invoice-${order?.orderCode || id}.pdf`
       pdf.save(fileName)
     } catch (err) {
@@ -450,59 +473,90 @@ const handleRejectOrder = async () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Invoice summary (this will be captured to PDF) */}
-            <div className="bg-white rounded-lg shadow-sm p-6" ref={invoiceRef}>
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="text-lg font-semibold text-slate-900">Hoá đơn</h2>
-                  <p className="text-sm text-slate-600">Mã: {order.orderCode}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-slate-600">Ngày: {formatDate(order.createdAt)}</p>
-                  <p className="text-sm text-slate-600">Người mua: {order.shippingAddress?.fullName}</p>
-                </div>
-              </div>
+                <div
+                ref={invoiceRef}
+                className="bg-white p-8 w-[480px] mx-auto text-[14px] text-slate-800 leading-relaxed"
+              >
 
-              <div className="mb-4">
-                <table className="w-full text-sm">
+                {/* Tên cửa hàng */}
+                <h2 className="text-center text-xl font-bold">KT.BookStore</h2>
+                <p className="text-center text-sm">04 - Nguyễn Văn Bảo</p>
+
+                {/* Tiêu đề */}
+                <h3 className="text-center text-lg font-semibold mt-4">HOÁ ĐƠN</h3>
+                <p className="text-center text-sm">
+                  Mã HĐ: {order.orderCode}
+                </p>
+
+                {/* Thông tin */}
+                <div className="mt-4 text-sm">
+                  <p>Ngày: <strong>{formatDate(order.createdAt)}</strong></p>
+                 
+                  <p>NV xuất HĐ: <strong>{userNametoken}</strong></p>
+                  <p>Khách hàng: <strong>{order.shippingAddress?.fullName}</strong></p>
+                  <p>SĐT: <strong>{order.shippingAddress?.phone}</strong></p>
+                </div>
+
+                {/* Bảng món */}
+                <table className="w-full mt-5 text-sm border-t border-b">
                   <thead>
-                    <tr className="text-left text-slate-600">
-                      <th>Sản phẩm</th>
-                      <th className="text-right">Số lượng</th>
-                      <th className="text-right">Đơn giá</th>
+                    <tr className="text-left border-b">
+                      <th className="py-2">Tên món</th>
+                      <th className="py-2 text-right">SL</th>
+                      <th className="py-2 text-right">Đơn giá</th>
+                      <th className="py-2 text-right">Thành tiền</th>
                     </tr>
                   </thead>
                   <tbody>
                     {order.items?.map((it) => (
-                      <tr key={it._id || it.productId || Math.random()} className="border-t">
+                      <tr key={it._id} className="border-b">
                         <td className="py-2">{it.title}</td>
                         <td className="py-2 text-right">{it.quantity}</td>
                         <td className="py-2 text-right">{formatCurrency(it.price)}</td>
+                        <td className="py-2 text-right">
+                          {formatCurrency(it.price * it.quantity)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
 
-              <div className="border-t pt-3 text-sm">
-                <div className="flex justify-between text-slate-600">
-                  <span>Tạm tính</span>
-                  <span>{formatCurrency(order.subtotal)}</span>
+                {/* Tính tiền */}
+                <div className="mt-4 text-sm">
+                  <div className="flex justify-between">
+                    <span>Thành tiền</span>
+                    <span>{formatCurrency(order.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Thuế(10%)</span>
+                    <span>{formatCurrency(order.tax || 0)}</span>
+                  </div>
+                   <div className="flex justify-between">
+                    <span>Vận Chuyển</span>
+                    <span>{formatCurrency(order.shippingFee || 0)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Khuyến mãi</span>
+                    - {formatCurrency((order.subtotal + order.shippingFee + order.tax) - order.total)|| 0}
+                  </div>
+
+                  <div className="flex justify-between text-lg font-bold mt-3">
+                    <span>Tổng thanh toán</span>
+                    <span className="text-red-600">{formatCurrency(order.total)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Phí vận chuyển</span>
-                  <span>{formatCurrency(order.shippingFee)}</span>
+
+                {/* Thanh toán */}
+                <div className="flex justify-between mt-4 font-semibold">
+                  <span>Cần phải thu</span>
+                  <span>{formatCurrency(order.total)}</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
-                  <span>Thuế</span>
-                  <span>{formatCurrency(order.tax)}</span>
-                </div>
-                <div className="flex justify-between font-bold text-lg mt-2">
-                  <span>Tổng cộng</span>
-                  <span className="text-blue-600">{formatCurrency(order.total)}</span>
-                </div>
+
+                {/* Ghi chú */}
+                <p className="text-center text-xs mt-5">
+                  Vui lòng kiểm tra kỹ lại nội dung trước khi thanh toán!
+                </p>
               </div>
-            </div>
 
             {/* Order info */}
             <div className="bg-white rounded-lg shadow-sm p-6">
